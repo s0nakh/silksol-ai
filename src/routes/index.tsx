@@ -86,7 +86,7 @@ const cargoes = [
   { id: "MCC-2048", origin: "Xi’an", destination: "Baku", location: "Khorgos", eta: "Oct 01, 09:15", status: "In Transit", risk: 12 },
   { id: "KZL-4107", origin: "Lianyungang", destination: "Tbilisi", location: "Caspian Sea", eta: "Sep 29, 22:10", status: "Escrow Triggered", risk: 91 },
   { id: "TRK-7782", origin: "Almaty", destination: "Istanbul", location: "Baku Terminal", eta: "Oct 02, 14:30", status: "In Transit", risk: 7 },
-];
+] as const;
 
 const statusClass: Record<string, string> = {
   "In Transit": "status-transit",
