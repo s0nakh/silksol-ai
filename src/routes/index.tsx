@@ -184,7 +184,7 @@ function Dashboard() {
               <div className="map-grid" />
               <div className="route-rail">
                 {routeStops.map((stop, index) => (
-                  <button key={stop.city} onClick={() => index === 2 && setSelectedCargo(cargoes[0])} className={`route-stop route-${stop.state}`} aria-label={`${stop.city}, ${stop.state}`}>
+                  <button key={stop.city} onClick={() => index === 2 && setSelectedCargo(cargoes[0] ?? selectedCargo)} className={`route-stop route-${stop.state}`} aria-label={`${stop.city}, ${stop.state}`}>
                     <span className="route-dot">{stop.state === "complete" ? <Check className="size-3" /> : index + 1}</span>
                     <span className="route-city">{stop.city}</span>
                     <span className="route-country">{stop.country}</span>
