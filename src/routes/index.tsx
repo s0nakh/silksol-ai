@@ -222,7 +222,7 @@ function Dashboard() {
                       <YAxis domain={[0, 100]} axisLine={false} tickLine={false} tick={{ fill: "var(--chart-label)", fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
                       <Tooltip contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 6, fontSize: 11 }} formatter={(value) => [`${value}%`, "Delay probability"]} />
                       <ReferenceLine y={50} stroke="var(--chart-warning)" strokeDasharray="4 4" label={{ value: "trigger", fill: "var(--chart-label)", fontSize: 9 }} />
-                      <Area type="monotone" dataKey="risk" stroke="var(--chart-risk)" strokeWidth={2.5} fill="url(#riskFill)" activeDot={{ r: 5, fill: "var(--chart-risk)", stroke: "var(--background)", strokeWidth: 3 }} />
+                      <Area type="monotone" dataKey="risk" stroke="var(--chart-risk)" strokeWidth={2.5} fill="url(#riskFill)" isAnimationActive={false} activeDot={{ r: 5, fill: "var(--chart-risk)", stroke: "var(--background)", strokeWidth: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
