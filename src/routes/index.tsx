@@ -81,12 +81,22 @@ const routeStops = [
   { city: "Istanbul", country: "Turkey", state: "pending" },
 ];
 
-const cargoes = [
+type Cargo = {
+  id: string;
+  origin: string;
+  destination: string;
+  location: string;
+  eta: string;
+  status: "In Transit" | "High Risk Delay" | "Escrow Triggered";
+  risk: number;
+};
+
+const cargoes: Cargo[] = [
   { id: "JOL-8921", origin: "Lianyungang", destination: "Istanbul", location: "Aktau Port", eta: "Sep 30, 18:40", status: "High Risk Delay", risk: 68 },
   { id: "MCC-2048", origin: "Xi’an", destination: "Baku", location: "Khorgos", eta: "Oct 01, 09:15", status: "In Transit", risk: 12 },
   { id: "KZL-4107", origin: "Lianyungang", destination: "Tbilisi", location: "Caspian Sea", eta: "Sep 29, 22:10", status: "Escrow Triggered", risk: 91 },
   { id: "TRK-7782", origin: "Almaty", destination: "Istanbul", location: "Baku Terminal", eta: "Oct 02, 14:30", status: "In Transit", risk: 7 },
-] as const;
+];
 
 const statusClass: Record<string, string> = {
   "In Transit": "status-transit",
@@ -102,7 +112,15 @@ const kpis = [
 ];
 
 function Dashboard() {
-  const [selectedCargo, setSelectedCargo] = useState(cargoes[0]);
+  const [selectedCargo, setSelectedCargo] = useState<Cargo>(cargoes[0] ?? {
+    id: "JOL-8921",
+    origin: "Lianyungang",
+    destination: "Istanbul",
+    location: "Aktau Port",
+    eta: "Sep 30, 18:40",
+    status: "High Risk Delay",
+    risk: 68,
+  });
   const [filter, setFilter] = useState("All cargoes");
   const [settled, setSettled] = useState(false);
 
