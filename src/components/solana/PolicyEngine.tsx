@@ -52,7 +52,10 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
     const tick = () => {
       const t = performance.now() - start;
       setTimer(Math.min(t, target));
-      if (t < target) return requestAnimationFrame(tick);
+      if (t < target) {
+        requestAnimationFrame(tick);
+        return;
+      }
       const tx = mockTxHash();
       onUpdate({ ...policy, stage: "paid", tx, payoutMs: Math.round(target) }, "Claim paid out");
       toast.success(`Claim Paid Out · ${policy.coverage.toLocaleString()} Demo USDC`, {
