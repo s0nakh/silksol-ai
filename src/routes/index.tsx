@@ -38,6 +38,12 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { SolanaProviders } from "@/components/solana/SolanaProviders";
+import { WalletButton } from "@/components/solana/WalletButton";
+import { CaspianVault } from "@/components/solana/CaspianVault";
+import { AuditDrawer, type AuditLog } from "@/components/solana/AuditDrawer";
+import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/PolicyEngine";
+import { DemoTag, mockTxHash } from "@/components/solana/DemoTag";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,19 +52,25 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Predictive risk monitoring and automated on-chain settlements for Middle Corridor logistics.",
+          "Predictive risk monitoring, parametric cover and devnet settlements for Middle Corridor logistics (demo).",
       },
       { property: "og:title", content: "SilkSol AI — Corridor Intelligence" },
       {
         property: "og:description",
-        content: "Real-time cargo risk intelligence secured by Solana.",
+        content: "Cargo risk intelligence and parametric settlement demo on Solana Devnet.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Dashboard,
+  component: () => (
+    <SolanaProviders>
+      <Dashboard />
+    </SolanaProviders>
+  ),
 });
+
+const emptyPolicy: Policy = { stage: "none", coverage: 2500, premium: 0 };
 
 const riskData = [
   { time: "06:00", risk: 8 },
@@ -123,6 +135,20 @@ function Dashboard() {
   });
   const [filter, setFilter] = useState("All cargoes");
   const [settled, setSettled] = useState(false);
+  const [policies, setPolicies] = useState<Record<string, Policy>>({});
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [walletUsdc, setWalletUsdc] = useState(10000);
+  const [staked, setStaked] = useState(0);
+
+  const policyOf = (id: string) => policies[id] ?? emptyPolicy;
+  const updatePolicy = (id: string, p: Policy, event: string) => {
+    setPolicies((prev) => ({ ...prev, [id]: p }));
+    if (p.stage === "paid") setWalletUsdc((w) => w + p.coverage);
+    setLogs((prev) => [
+      ...prev,
+      { id: prev.length + 1, time: new Date().toLocaleTimeString(), event, cargo: id, leaf: mockTxHash().slice(0, 44), root: mockTxHash().slice(0, 44) },
+    ]);
+  };
 
   const visibleCargoes = useMemo(
     () => filter === "All cargoes" ? cargoes : cargoes.filter((cargo) => cargo.status === filter),
@@ -131,6 +157,7 @@ function Dashboard() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
+      <div className="border-b border-warning/30 bg-warning/10 px-4 py-1.5 text-center text-[11px] text-warning">Demo environment — balances, metrics, feeds and transactions are simulated or on Solana Devnet. No real funds.</div>
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
@@ -140,13 +167,12 @@ function Dashboard() {
           <div className="hidden h-6 w-px bg-border lg:block" />
           <div className="hidden items-center gap-2 text-xs text-muted-foreground lg:flex">
             <span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-50" /><span className="relative inline-flex size-2 rounded-full bg-success" /></span>
-            <span className="font-semibold text-foreground">Solana Mainnet</span>
-            <span>•</span><span>2,400 TPS</span><span>•</span><span>Avg Fee $0.00025</span>
+            <span className="font-semibold text-foreground">Solana Devnet</span>
+            <span>•</span><span>2,400 TPS</span><span>•</span><span>Avg Fee $0.00025</span><DemoTag kind="SIMULATED" />
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="icon" aria-label="Notifications"><Bell className="size-4" /></Button>
-            <Button variant="secondary" className="hidden sm:inline-flex"><WalletCards className="size-4 text-success" /><span className="hidden md:inline">Phantom / Solflare</span><span>0x...4F8A</span></Button>
-            <div className="flex size-9 items-center justify-center rounded-md bg-primary/15 text-xs font-bold text-primary ring-1 ring-primary/30">SK</div>
+            <AuditDrawer logs={logs} />
+            <WalletButton demoUsdc={walletUsdc} />
           </div>
         </div>
       </header>
@@ -170,7 +196,7 @@ function Dashboard() {
                   <div className={`metric-icon ${kpi.tone === "success" ? "metric-icon-success" : ""}`}><Icon className="size-4" /></div>
                   <span className={kpi.change.startsWith("−") ? "text-xs font-semibold text-success" : "text-xs font-semibold text-primary"}>{kpi.change}</span>
                 </div>
-                <p className="mt-5 text-xs font-medium text-muted-foreground">{kpi.label}</p>
+                <p className="mt-5 flex items-center gap-2 text-xs font-medium text-muted-foreground">{kpi.label}<DemoTag kind="DEMO DATA" /></p>
                 <div className="mt-1 flex items-baseline gap-2"><strong className="text-2xl font-semibold tracking-normal">{kpi.value}</strong><span className="text-[11px] text-muted-foreground">{kpi.detail}</span></div>
               </article>
             );
@@ -209,18 +235,28 @@ function Dashboard() {
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-left">
-                  <thead><tr className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground"><th>Cargo ID</th><th>Route</th><th>Current location</th><th>ETA</th><th>Status</th><th>Risk</th><th /></tr></thead>
+                  <thead><tr className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground"><th>Cargo ID</th><th>Route</th><th>Location</th><th>ETA</th><th>Status</th><th>AI risk</th><th>Premium</th><th>Policy</th></tr></thead>
                   <tbody>
-                    {visibleCargoes.map((cargo) => (
+                    {visibleCargoes.map((cargo) => {
+                      const p = policyOf(cargo.id);
+                      return (
                       <tr key={cargo.id} onClick={() => setSelectedCargo(cargo)} className={selectedCargo.id === cargo.id ? "table-row-active" : ""}>
                         <td className="font-semibold text-foreground">#{cargo.id}</td>
                         <td><span className="text-foreground">{cargo.origin}</span><ChevronRight className="mx-1 inline size-3" />{cargo.destination}</td>
                         <td>{cargo.location}</td><td>{cargo.eta}</td>
-                        <td><span className={`status-pill ${statusClass[cargo.status]}`}>{cargo.status}</span></td>
+                        <td>{p.stage === "paid" ? <span className="status-pill status-transit">Claim Paid Out (Demo USDC)</span> : <span className={`status-pill ${statusClass[cargo.status]}`}>{cargo.status}</span>}</td>
                         <td><span className={cargo.risk > 60 ? "font-semibold text-warning" : "font-semibold text-success"}>{cargo.risk}%</span></td>
-                        <td><Button variant="ghost" className="size-7 p-0" aria-label={`Open ${cargo.id}`}><MoreHorizontal className="size-4" /></Button></td>
+                        <td className="whitespace-nowrap">{premiumFor(cargo.risk, 2500)} <span className="text-[10px]">USDC</span></td>
+                        <td>
+                          {p.stage === "none" ? (
+                            <Button size="sm" variant="secondary" className="h-7 whitespace-nowrap px-2 text-[11px]" onClick={(e) => { e.stopPropagation(); setSelectedCargo(cargo); updatePolicy(cargo.id, { stage: "issued", coverage: 2500, premium: premiumFor(cargo.risk, 2500) }, "Policy issued"); }}>Issue Parametric Policy</Button>
+                          ) : (
+                            <span className="text-[11px] capitalize text-primary">{p.stage}</span>
+                          )}
+                        </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -228,6 +264,7 @@ function Dashboard() {
           </div>
 
           <div className="grid min-w-0 gap-4">
+            <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
             <div className="panel overflow-hidden">
               <PanelHeader icon={Sparkles} eyebrow="SilkSol prediction engine" title={`Delay risk · #${selectedCargo.id}`} aside={<span className="text-xl font-semibold text-warning">{selectedCargo.risk}%</span>} />
               <div className="px-2 pb-2 pt-4 sm:px-4">
