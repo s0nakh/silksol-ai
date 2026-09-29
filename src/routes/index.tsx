@@ -205,7 +205,7 @@ function Dashboard() {
 
         <section className="mt-4 grid gap-4 xl:grid-cols-[1.65fr_1fr]">
           <div className="panel min-w-0 overflow-hidden">
-            <PanelHeader icon={MapPin} eyebrow="Live route telemetry" title="Middle Corridor tracker" aside={<span className="status-pill status-transit"><Activity className="size-3" /> 18 active signals</span>} />
+            <PanelHeader icon={MapPin} eyebrow="Live route telemetry" title="Middle Corridor tracker" aside={<span className="flex items-center gap-2"><DemoTag kind="DEMO DATA" /><span className="status-pill status-transit"><Activity className="size-3" /> 18 signals</span></span>} />
             <div className="corridor-map">
               <div className="map-grid" />
               <div className="route-rail">
@@ -266,7 +266,7 @@ function Dashboard() {
           <div className="grid min-w-0 gap-4">
             <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
             <div className="panel overflow-hidden">
-              <PanelHeader icon={Sparkles} eyebrow="SilkSol prediction engine" title={`Delay risk · #${selectedCargo.id}`} aside={<span className="text-xl font-semibold text-warning">{selectedCargo.risk}%</span>} />
+              <PanelHeader icon={Sparkles} eyebrow="SilkSol prediction engine" title={`Delay risk · #${selectedCargo.id}`} aside={<span className="flex items-center gap-2"><DemoTag kind="SIMULATED" /><span className="text-xl font-semibold text-warning">{selectedCargo.risk}%</span></span>} />
               <div className="px-2 pb-2 pt-4 sm:px-4">
                 <div className="h-[220px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -285,8 +285,10 @@ function Dashboard() {
               </div>
             </div>
 
+            <CaspianVault walletUsdc={walletUsdc} staked={staked} tvl={4_250_000 + staked} onChange={(d) => { setStaked((s) => s + d); setWalletUsdc((w) => w - d); }} />
+
             <div className="panel">
-              <PanelHeader icon={Radio} eyebrow="Sensor network" title="Live IoT telemetry" aside={<span className="text-[10px] font-semibold text-success">STREAMING</span>} />
+              <PanelHeader icon={Radio} eyebrow="Sensor network" title="Live IoT telemetry" aside={<DemoTag kind="SIMULATED" />} />
               <div className="grid grid-cols-3 divide-x divide-border px-2 py-5">
                 <Sensor icon={Thermometer} label="Temperature" value="4.2°C" note="Stable" />
                 <Sensor icon={Gauge} label="Speed" value="0 km/h" note="At terminal" />
@@ -299,7 +301,7 @@ function Dashboard() {
         <section className="mt-4 panel settlement-panel overflow-hidden">
           <div className="relative grid gap-6 p-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:p-7">
             <div>
-              <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary"><CircleDollarSign className="size-4" /> Autonomous settlement</div>
+              <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary"><CircleDollarSign className="size-4" /> Autonomous settlement <DemoTag kind="SIMULATED" /></div>
               <h2 className="text-lg font-semibold">Smart contract trigger</h2>
               <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Delay at Aktau Port exceeded the insured 18-hour threshold. Oracle consensus confirmed across 8 sources.</p>
               <div className="mt-4 flex flex-wrap gap-2"><span className="condition-chip"><Clock3 className="size-3" /> Actual 21.6 hrs</span><span className="condition-chip"><ShieldCheck className="size-3" /> Policy verified</span></div>
@@ -308,7 +310,7 @@ function Dashboard() {
             <div className="settlement-result">
               <div className="flex items-start gap-3">
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-md ${settled ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}`}>{settled ? <Check className="size-5" /> : <Zap className="size-5" />}</div>
-                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana</span></p></div>
+                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p></div>
               </div>
               <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center">
                 <a href="https://explorer.solana.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:text-primary/80">tx: 5K9x...7P2q <ExternalLink className="size-3" /></a>
