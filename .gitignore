@@ -21,12 +21,27 @@ dist-ssr
 .dev.vars
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+.vscode/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Solana keypairs & other secrets
+*-keypair.json
+id.json
+*.pem
+
+# Playwright artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
