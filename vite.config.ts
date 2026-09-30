@@ -8,6 +8,17 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   vite: {
+    // Pre-bundle Solana deps up front so the preview doesn't reload repeatedly while discovering them.
+    optimizeDeps: {
+      include: [
+        "buffer",
+        "@solana/web3.js",
+        "@solana/wallet-adapter-base",
+        "@solana/wallet-adapter-react",
+        "@solana/wallet-adapter-phantom",
+        "@solana/wallet-adapter-solflare",
+      ],
+    },
     resolve: {
       alias: {
         // rpc-websockets only exports "browser"/"node" conditions; the Worker build needs an explicit entry.
