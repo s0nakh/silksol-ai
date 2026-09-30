@@ -2,9 +2,11 @@
 
 > Predictive Risk Analytics & Parametric Settlement Protocol for Middle Corridor (TMTM) Logistics on Solana
 
-[![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-purple?style=flat-square&logo=solana)](https://solana.com)
-[![Category](https://img.shields.io/badge/Category-Supply_Chain_%26_Logistics-blue?style=flat-square)](#)
-[![Regulatory Framework](https://img.shields.io/badge/AIFC-Sandbox_Concept-gold?style=flat-square)](#)
+<p align="left">
+  <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
+  <img src="https://img.shields.io/badge/Category-Supply_Chain_%26_Logistics-007ACC?style=for-the-badge" alt="Category" />
+  <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
+</p>
 
 ---
 
@@ -12,11 +14,12 @@
 
 SilkSol AI is a B2B dApp MVP combining telemetry risk analytics with automated Solana smart contracts to demonstrate instant delay mitigation and dispute resolution along the Trans-Caspian International Transport Route (TMTM / Middle Corridor).
 
-Traditional supply chain insurance claims take 60–90+ days due to manual paperwork and dispute resolution. SilkSol AI demonstrates how verified telemetry feeds trigger automated, rule-based USDC payouts via non-custodial Solana Escrow Vaults, designed with a dual-currency eKZT (Digital Kazakhstan Tenge) settlement abstraction layer for future AIFC regulatory sandbox compliance.
+Traditional supply chain insurance claims take 60–90+ days due to manual paperwork and dispute resolution. SilkSol AI demonstrates how verified telemetry feeds trigger automated, rule-based USDC payouts via non-custodial Solana Escrow Vaults, designed with a dual-currency eKZT (Digital Tenge) settlement abstraction layer for future AIFC regulatory sandbox compliance.
 
 ---
 
 ## 🏗 System Architecture
+
 ```text
  [IoT Sensors / GPS Trackers / Railway Telemetry]
                         │  (Simulated Telemetry API / Webhooks)
@@ -46,60 +49,75 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 
 ## ✨ Key Features
 
-● Status & Risk Indexing: High-level tracking of transit checkpoints across Caspian ports (Aktau/Kuryk) and regional hubs.
-● State Compression (cNFTs): Cost-efficient storage of supply chain audit trails on Solana.
-● Parametric Escrow Prototype: Automated USDC payout triggers upon verified delay thresholds (dwell_time > threshold).
-● Regulatory Sandbox Off-Ramp: eKZT (Digital Tenge) settlement abstraction concept tailored for AIFC sandbox integration.
-● Zero Paperwork: Instant, transparent, and verifiable event-driven settlement.
+- **Status & Risk Indexing:** High-level tracking of transit checkpoints across Caspian ports (Aktau/Kuryk) and regional hubs.
+- **State Compression (cNFTs):** Cost-efficient storage of supply chain audit trails on Solana.
+- **Parametric Escrow Prototype:** Automated USDC payout triggers upon verified delay thresholds (`dwell_time > threshold`).
+- **Regulatory Sandbox Off-Ramp:** eKZT (Digital Tenge) settlement abstraction concept tailored for AIFC sandbox integration.
+- **Zero Paperwork:** Instant, transparent, and verifiable event-driven settlement.
 
 ---
 
-
 ## 🛠 Tech Stack
 
-● Blockchain: Solana Devnet, Compressed NFTs (cNFT / State Compression)
-● Tokens & Escrow: SPL-Token / Demo USDC, eKZT Settlement Abstraction
-● Risk Engine: Predictive Risk Scoring Logic & Parametric Oracle Simulator
-● Frontend & UI: React, TypeScript, Tailwind CSS, Recharts
-● Web3 Integration: @solana/web3.js, @solana/wallet-adapter-react
+- **Blockchain:** Solana Devnet, Compressed NFTs (cNFT / State Compression)
+- **Tokens & Escrow:** SPL-Token / Demo USDC, eKZT Settlement Abstraction
+- **Risk Engine:** Predictive Risk Scoring Logic & Parametric Oracle Simulator
+- **Frontend & UI:** React, TypeScript, Tailwind CSS, Recharts
+- **Web3 Integration:** `@solana/web3.js`, `@solana/wallet-adapter-react`
 
 ---
 
 ## ⚠️ MVP Status & Intellectual Property Notice
 
-● MVP Data & Telemetry: This public repository is an interactive hackathon MVP. All telemetry streams, risk metrics, and oracle events utilize synthetic/simulated data to demonstrate the automated workflow without requiring live hardware sensors.
-● Deterministic Triggers: AI/ML components represent predictive risk scoring logic; payout triggers are strictly deterministic rule-based smart contracts (dwell_time > threshold).
-● IP Protection: Proprietary risk-scoring algorithms, dataset parameters, and model weights remain confidential assets of DataRigLab / SilkSol AI and operate behind private infrastructure.
-● Regulatory Roadmap: The eKZT / Digital Tenge integration represents a structural proposal for future testing within the AIFC regulatory sandbox environment.
+- **MVP Data & Telemetry:** This public repository is an interactive hackathon MVP. All telemetry streams, risk metrics, and oracle events utilize synthetic/simulated data to demonstrate the automated workflow without requiring live hardware sensors.
+- **Deterministic Triggers:** AI/ML components represent predictive risk scoring logic; payout triggers are strictly deterministic rule-based smart contracts (`dwell_time > threshold`).
+- **IP Protection:** Proprietary risk-scoring algorithms, dataset parameters, and model weights remain confidential assets of DataRigLab / SilkSol AI and operate behind private infrastructure.
+- **Regulatory Roadmap:** The eKZT / Digital Tenge integration represents a structural proposal for future testing within the AIFC regulatory sandbox environment.
 
 ---
 
 ## 🚀 Getting Started (Local Development)
 
 ### Prerequisites
-
 - Node.js (v18+)
 - npm / yarn / pnpm
 
-### Dashboard Setup
+### Setup Instructions
 
-1. Clone repository:
-git clone https://github.com/s0nakh/silksol-ai.git
+1. **Clone repository:**
+```bash
+git clone [https://github.com/s0nakh/silksol-ai.git](https://github.com/s0nakh/silksol-ai.git)
 cd silksol-ai
+```
 
-2. Install dependencies:
+2. **Install dependencies:**
+```bash
 npm install
+```
 
-3. Configure Environment Variables (.env.local):
+3. **Configure Environment Variables (.env.local):**
+```bash
 VITE_SOLANA_CLUSTER=devnet
-VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_SOLANA_RPC_URL=[https://api.devnet.solana.com](https://api.devnet.solana.com)
+```
 
-4. Launch local server:
+4. **Lunch local server:**
+```bash
 npm run dev
+```
 
----
 
-## 📜 License & Copyright
+### 📜 License & Copyright
+Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.  
+*Published for Solana Colosseum Frontier Hackathon demonstration and evaluation.*
 
-Copyright © 2026 SilkSol AI / s0nakh. All rights reserved.  
-Published for Solana Colosseum Frontier Hackathon demonstration and further evaluation.
+
+
+
+
+
+
+
+
+
+
