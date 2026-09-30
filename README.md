@@ -2,10 +2,9 @@
 
 > Predictive Risk Analytics & Parametric Settlement Protocol for Middle Corridor (TMTM) Logistics on Solana
 
-![Solana Network](https://img.shields.io/badge/Solana-Mainnet%2FDevnet-purple?style=for-the-badge&logo=solana)
-![Anchor Framework](https://img.shields.io/badge/Anchor-v0.29.0-blue?style=for-the-badge)
-![React](https://img.shields.io/badge/Frontend-React%20%7C%20Tailwind-61DAFB?style=for-the-badge&logo=react)
-![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
+[![Solana Devnet](https://img.shields.io/badge/Solana-Devnet-purple?style=flat-square&logo=solana)](https://solana.com)
+[![Category](https://img.shields.io/badge/Category-Supply_Chain_%26_Logistics-blue?style=flat-square)](#)
+[![Regulatory Framework](https://img.shields.io/badge/AIFC-Sandbox_Concept-gold?style=flat-square)](#)
 
 ---
 
