@@ -18,13 +18,32 @@ type Props = {
 };
 
 export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
-  const { connected, signMessage } = useWallet();
+  const wallet = useWallet();
+  const { connection } = useConnection();
+  const { connected, signMessage } = wallet;
   const [busy, setBusy] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
 
-  const issue = () => {
+  const issue = async () => {
     const coverage = 2500;
-    onUpdate({ stage: "issued", coverage, premium: premiumFor(risk, coverage) }, "Policy issued");
+    const base = { stage: "issued" as const, coverage, premium: premiumFor(risk, coverage) };
+    if (!connected) {
+      onUpdate(base, "Policy issued");
+      return;
+    }
+    setBusy(true);
+    try {
+      const sig = await sendDevnetSol(wallet, connection);
+      onUpdate({ ...base, tx: sig }, "Policy issued (Devnet tx)");
+      toast.success("Policy issued · 0.001 Devnet SOL", {
+        description: `Real devnet signature ${shortHash(sig)}`,
+        action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
+      });
+    } catch (e) {
+      toast.error("Devnet transaction failed or rejected", { description: e instanceof Error ? e.message : "Airdrop Devnet SOL and retry." });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const lock = async () => {

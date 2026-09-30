@@ -43,7 +43,10 @@ import { WalletButton } from "@/components/solana/WalletButton";
 import { CaspianVault } from "@/components/solana/CaspianVault";
 import { AuditDrawer, type AuditLog } from "@/components/solana/AuditDrawer";
 import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/PolicyEngine";
-import { DemoTag, mockTxHash } from "@/components/solana/DemoTag";
+import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/DemoTag";
+import { ekzt, sendDevnetSol } from "@/components/solana/devnetTx";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -135,6 +138,31 @@ function Dashboard() {
   });
   const [filter, setFilter] = useState("All cargoes");
   const [settled, setSettled] = useState(false);
+  const [settling, setSettling] = useState(false);
+  const [settleSig, setSettleSig] = useState<string | null>(null);
+  const wallet = useWallet();
+  const { connection } = useConnection();
+  const reviewSettlement = async () => {
+    if (!wallet.connected) {
+      setSettled(true);
+      toast.success("Settlement acknowledged (Simulated)", { description: `2,500 Demo USDC · (or ${ekzt(2500)} via AIFC Gateway)` });
+      return;
+    }
+    setSettling(true);
+    try {
+      const sig = await sendDevnetSol(wallet, connection);
+      setSettleSig(sig);
+      setSettled(true);
+      toast.success("Devnet settlement signed · 0.001 SOL", {
+        description: `2,500 Demo USDC · (or ${ekzt(2500)} via AIFC Gateway) · tx ${shortHash(sig)}`,
+        action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
+      });
+    } catch (e) {
+      toast.error("Devnet transaction failed or rejected", { description: e instanceof Error ? e.message : "Try airdropping Devnet SOL first." });
+    } finally {
+      setSettling(false);
+    }
+  };
   const [policies, setPolicies] = useState<Record<string, Policy>>({});
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [walletUsdc, setWalletUsdc] = useState(10000);
@@ -310,11 +338,12 @@ function Dashboard() {
             <div className="settlement-result">
               <div className="flex items-start gap-3">
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-md ${settled ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}`}>{settled ? <Check className="size-5" /> : <Zap className="size-5" />}</div>
-                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p></div>
+                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p><p className="mt-0.5 text-xs text-muted-foreground">(or {ekzt(2500)} via AIFC Gateway)</p></div>
               </div>
               <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center">
-                <a href="https://explorer.solana.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:text-primary/80">tx: 5K9x...7P2q <ExternalLink className="size-3" /></a>
-                <Button className="sm:ml-auto" onClick={() => setSettled(true)} disabled={settled}>{settled ? <><Check className="size-4" /> Acknowledged</> : <>Review settlement <ArrowUpRight className="size-4" /></>}</Button>
+                <a href={settleSig ? explorerTx(settleSig) : "https://explorer.solana.com/?cluster=devnet"} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:text-primary/80">tx: {settleSig ? shortHash(settleSig) : "5K9x...7P2q"} <ExternalLink className="size-3" /></a>
+                {settleSig && <DemoTag kind="DEVNET" />}
+                <Button className="sm:ml-auto" onClick={reviewSettlement} disabled={settled || settling}>{settled ? <><Check className="size-4" /> Acknowledged</> : settling ? "Awaiting wallet…" : <>Review settlement <ArrowUpRight className="size-4" /></>}</Button>
               </div>
             </div>
           </div>
