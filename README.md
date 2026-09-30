@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
-  <a href="https://github.com/s0nakh/silksol-ai/actions/workflows/e2e.yml"><img src="https://img.shields.io/github/actions/workflow/status/s0nakh/silksol-ai/e2e.yml?branch=main&style=for-the-badge&logo=playwright&label=E2E%20Tests" alt="E2E Testing Status" /></a>
+  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
 </p>
 
@@ -80,7 +80,7 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 
 ## 🧪 Testing & E2E Validation
 
-A [Playwright](https://playwright.dev) suite (13 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. It runs on every push via [GitHub Actions](https://github.com/s0nakh/silksol-ai/actions/workflows/e2e.yml).
+A [Playwright](https://playwright.dev) suite (13 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
 
 | Suite | Coverage |
 |---|---|

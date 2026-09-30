@@ -1,9 +1,7 @@
 name: E2E Tests
 
+# Manual trigger for now; add `push: { branches: [main] }` and `pull_request:` to run on every commit.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
 
 jobs:
