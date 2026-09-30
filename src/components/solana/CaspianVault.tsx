@@ -64,6 +64,7 @@ export function CaspianVault({ walletUsdc, staked, tvl, onChange }: Props) {
               <div className="flex justify-between text-xs text-muted-foreground"><span>Amount (Demo USDC)</span><button className="text-primary" onClick={() => setAmount(String(max))}>Max {max.toLocaleString()}</button></div>
               <Input type="number" min={0} value={amount} onChange={(e) => setAmount(e.target.value)} />
               {invalid && <p className="text-xs text-warning">Enter an amount between 0 and {max.toLocaleString()}.</p>}
+              {mode === "withdraw" && Number.isFinite(value) && value > 0 && <p className="text-[11px] text-muted-foreground">(or ~{(value * 500).toLocaleString()} eKZT via AIFC Gateway)</p>}
               <p className="text-xs text-muted-foreground">You receive ≈ {Number.isFinite(value) ? (value * 0.97).toFixed(2) : "0"} csRV share tokens <DemoTag kind="SIMULATED" /></p>
             </div>
             <Button onClick={submit} disabled={invalid}>{mode === "deposit" ? "Deposit" : "Withdraw"} (Demo)</Button>
