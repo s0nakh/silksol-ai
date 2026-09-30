@@ -1,4 +1,5 @@
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { ekzt, sendDevnetSol } from "./devnetTx";
 import { Check, FileSignature, Lock, Radar, ShieldCheck, Timer } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -18,13 +19,32 @@ type Props = {
 };
 
 export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
-  const { connected, signMessage } = useWallet();
+  const wallet = useWallet();
+  const { connection } = useConnection();
+  const { connected, signMessage } = wallet;
   const [busy, setBusy] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
 
-  const issue = () => {
+  const issue = async () => {
     const coverage = 2500;
-    onUpdate({ stage: "issued", coverage, premium: premiumFor(risk, coverage) }, "Policy issued");
+    const base = { stage: "issued" as const, coverage, premium: premiumFor(risk, coverage) };
+    if (!connected) {
+      onUpdate(base, "Policy issued");
+      return;
+    }
+    setBusy(true);
+    try {
+      const sig = await sendDevnetSol(wallet, connection);
+      onUpdate({ ...base, tx: sig }, "Policy issued (Devnet tx)");
+      toast.success("Policy issued · 0.001 Devnet SOL", {
+        description: `Real devnet signature ${shortHash(sig)}`,
+        action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
+      });
+    } catch (e) {
+      toast.error("Devnet transaction failed or rejected", { description: e instanceof Error ? e.message : "Airdrop Devnet SOL and retry." });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const lock = async () => {
@@ -59,7 +79,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
       const tx = mockTxHash();
       onUpdate({ ...policy, stage: "paid", tx, payoutMs: Math.round(target) }, "Claim paid out");
       toast.success(`Claim Paid Out · ${policy.coverage.toLocaleString()} Demo USDC`, {
-        description: `Mock Solana Explorer tx ${shortHash(tx)} · ${Math.round(target)} ms`,
+        description: `(or ${ekzt(policy.coverage)} via AIFC Gateway) · Mock tx ${shortHash(tx)} · ${Math.round(target)} ms`,
         action: { label: "Explorer", onClick: () => window.open(explorerTx(tx), "_blank") },
       });
       setBusy(false);
@@ -102,7 +122,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
             </div>
           ))}
         </div>
-        {policy.stage === "none" && <Button className="w-full" onClick={issue}><FileSignature className="size-4" /> Issue Parametric Policy</Button>}
+        {policy.stage === "none" && <Button className="w-full" onClick={issue} disabled={busy}><FileSignature className="size-4" /> {busy ? "Awaiting wallet…" : "Issue Parametric Policy"}</Button>}
         {policy.stage === "issued" && (
           <>
             <Button className="w-full" onClick={lock} disabled={busy}><Lock className="size-4" /> {busy ? "Awaiting signature…" : "Lock Collateral & Sign (Devnet)"}</Button>
@@ -116,7 +136,8 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
         )}
         {policy.stage === "paid" && (
           <div className="rounded-md border border-success/40 bg-success/10 p-3 text-xs">
-            <p className="flex items-center gap-2 font-semibold text-success"><Check className="size-4" /> Claim Paid Out (Demo USDC) <DemoTag kind="SIMULATED" /></p>
+            <p className="flex items-center gap-2 font-semibold text-success"><Check className="size-4" /> Claim Paid Out · {policy.coverage.toLocaleString()} Demo USDC <DemoTag kind="SIMULATED" /></p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">(or {ekzt(policy.coverage)} via AIFC Gateway)</p>
             <p className="mt-1 text-muted-foreground">Settled in {policy.payoutMs} ms · <a className="font-mono text-primary" href={policy.tx ? explorerTx(policy.tx) : "#"} target="_blank" rel="noreferrer">tx {policy.tx ? shortHash(policy.tx) : ""}</a></p>
           </div>
         )}
