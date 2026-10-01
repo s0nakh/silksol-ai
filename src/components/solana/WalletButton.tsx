@@ -2,7 +2,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { LogOut, WalletCards } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,7 +47,7 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
   useEffect(() => {
     if (!connecting) return;
     const id = window.setTimeout(() => {
-      disconnect().catch(() => undefined);
+      forceDisconnect();
       toast.error(`${wallet?.adapter.name ?? "Wallet"} did not respond`, {
         description: "Click the wallet icon in your browser toolbar, unlock it, make sure it is on Devnet, then press Connect wallet again.",
         duration: 12000,
@@ -55,6 +55,19 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
     }, 30_000);
     return () => window.clearTimeout(id);
   }, [connecting, disconnect, wallet]);
+
+  // wallet-adapter drops "disconnect" events once the page has seen a `beforeunload` (some
+  // browsers, e.g. Arc, fire it when opening links), leaving the UI stuck as connected.
+  // Clear the stored wallet and, if the UI still hasn't caught up, reload as a last resort.
+  const connectedRef = useRef(connected);
+  connectedRef.current = connected;
+  const forceDisconnect = async () => {
+    await disconnect().catch(() => undefined);
+    select(null);
+    window.setTimeout(() => {
+      if (connectedRef.current) window.location.reload();
+    }, 600);
+  };
 
   const addr = publicKey?.toBase58();
 
@@ -76,7 +89,7 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
               <p className="px-2 py-1.5 text-[11px] leading-4 text-warning">
                 Waiting for {wallet?.adapter.name ?? "your wallet"} — approve the request in its popup (click the extension icon if no window appeared).
               </p>
-              <DropdownMenuItem onClick={() => disconnect()}>
+              <DropdownMenuItem onClick={forceDisconnect}>
                 <LogOut className="size-4" /> Cancel and retry
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -121,7 +134,7 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
           <div className="flex justify-between"><span className="text-muted-foreground">Demo USDC</span><span className="font-semibold">{demoUsdc.toLocaleString()}</span></div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => disconnect()}><LogOut className="size-4" /> Disconnect</DropdownMenuItem>
+        <DropdownMenuItem onClick={forceDisconnect}><LogOut className="size-4" /> Disconnect</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
