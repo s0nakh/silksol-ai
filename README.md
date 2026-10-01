@@ -94,7 +94,7 @@ The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./an
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral and signs oracle telemetry server-side, and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral and signs oracle telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
@@ -192,8 +192,8 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 3. **Configure environment variables:**
    ```bash
    cp .env.example .env
-   # optional: server-side insurer treasury (Devnet keypair JSON array) for real payouts
-   echo "SILKSOL_TREASURY_SECRET=$(cat ~/.config/solana/<treasury>.json)" >> .env
+   # VITE_INSURER_URL points at the insurer/oracle Netlify Function (oracle/).
+   # Its treasury secret is set only in Netlify: netlify env:set SILKSOL_TREASURY_SECRET ... --secret
    ```
 
 4. **Launch local server:**

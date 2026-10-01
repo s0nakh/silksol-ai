@@ -61,7 +61,7 @@ SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | Policy 1790
 
 `Report sha256` is the hash of the oracle report (cargo, policy, beneficiary, dwell, threshold, risk score) that caused the payout, so the off-chain evidence can be audited against the on-chain record.
 
-The treasury secret lives only in the server environment (`SILKSOL_TREASURY_SECRET`); the server function throttles requests per wallet and refuses to pay below a 0.05 SOL treasury floor. If the secret is not configured, Lock/Trigger fall back to a self-funded vault signed by the wallet. Without a wallet the dashboard uses clearly labelled simulated transactions.
+The insurer/oracle runs as a separate Netlify Function ([`oracle/`](../oracle/netlify/functions/insurer.mts)); the treasury secret lives only in its environment (`SILKSOL_TREASURY_SECRET`), never in git or the browser. It accepts calls only from the dApp's origins, throttles requests per wallet and refuses to pay below a 0.05 SOL treasury floor. If the secret is not configured, Lock/Trigger fall back to a self-funded vault signed by the wallet. Without a wallet the dashboard uses clearly labelled simulated transactions.
 
 ## eKZT Off-Ramp Abstraction
 

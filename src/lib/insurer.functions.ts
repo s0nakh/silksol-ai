@@ -1,19 +1,22 @@
-import { createServerFn } from "@tanstack/react-start";
 import type { InsurerRequest, InsurerResult } from "./insurer";
 
-const DEFAULT_RPC = "https://api.devnet.solana.com";
+// The insurer/oracle runs as a separate Netlify Function (see oracle/), because the treasury
+// secret must stay server-side. Its URL is public; the secret is not.
+const INSURER_URL =
+  import.meta.env["VITE_INSURER_URL"] || "https://silksol-oracle.netlify.app/api/insurer";
 
-/**
- * Insurer/oracle actions signed by the SilkSol treasury on the server.
- * The secret (SILKSOL_TREASURY_SECRET, a Devnet keypair JSON array) never reaches the browser.
- */
-export const insurerAction = createServerFn({ method: "POST" })
-  .validator((d: InsurerRequest) => d)
-  .handler(async ({ data }): Promise<InsurerResult> => {
-    const { runInsurer } = await import("./insurer");
-    return runInsurer(
-      data,
-      process.env["SILKSOL_TREASURY_SECRET"],
-      process.env["SOLANA_RPC_URL"] || DEFAULT_RPC,
-    );
-  });
+/** Calls the SilkSol insurer/oracle. Any network failure is reported as "not_configured" so the UI falls back to simulation. */
+export async function insurerAction({ data }: { data: InsurerRequest }): Promise<InsurerResult> {
+  try {
+    const res = await fetch(INSURER_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const json = (await res.json()) as InsurerResult;
+    if (typeof json?.ok !== "boolean") throw new Error("Bad response");
+    return json;
+  } catch {
+    return { ok: false, reason: "not_configured", message: "SilkSol insurer service is unreachable." };
+  }
+}
