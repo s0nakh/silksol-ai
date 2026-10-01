@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
-  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
+  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-14%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
   <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-11%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
@@ -17,6 +17,7 @@
 <p align="center">
   <a href="https://silksol.datariglab.kz/">🌐 Live dApp MVP</a> |
   <a href="https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193">🎥 dApp Demo Video</a> |
+  <a href="https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09">🎤 Pitch Video</a> |
   <a href="./docs/ARCHITECTURE.md">📚 Documentation</a>
 </p>
 
@@ -98,7 +99,20 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ## 🧪 Testing & E2E Validation
 
-A [Playwright](https://playwright.dev) suite (13 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
+### ✅ Verification status — all green (Oct 1, 2026)
+
+| Check | Result |
+|---|---|
+| Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 passed** |
+| E2E suite against a local build | **14 / 14 passed** |
+| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 passed** |
+| Production build & TypeScript type-check | **Passed** |
+| Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
+| End-to-end on Devnet: lock collateral → trigger → payout | ✅ [lock tx](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [payout tx](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (settled in ~1.4 s) |
+
+### E2E suite
+
+A [Playwright](https://playwright.dev) suite (14 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
 
 | Suite | Coverage |
 |---|---|
@@ -109,6 +123,7 @@ A [Playwright](https://playwright.dev) suite (13 tests, [`e2e/dashboard.spec.ts`
 | **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout. |
 | **Caspian Risk Vault** | Demo USDC deposit updates stake; amounts above the wallet balance are rejected. |
 | **cNFT Audit Trail** | Each policy event is logged as a compressed Merkle checkpoint (leaf + root). |
+| **On-chain Escrow Program** | Policy panel links to the deployed Devnet program and shows its live status. |
 
 Run the suite:
 
