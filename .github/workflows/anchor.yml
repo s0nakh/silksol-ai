@@ -1,0 +1,67 @@
+name: Solana Program
+
+on:
+  push:
+    branches: [main]
+    paths: ["anchor/**", "src/components/solana/escrowProgram.ts", ".github/workflows/anchor.yml"]
+  pull_request:
+    paths: ["anchor/**", "src/components/solana/escrowProgram.ts", ".github/workflows/anchor.yml"]
+  workflow_dispatch:
+
+env:
+  SOLANA_VERSION: stable
+  ANCHOR_VERSION: 1.2.0
+
+jobs:
+  anchor-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Tests import the dashboard's escrow client, which resolves @solana/web3.js from the root.
+      - name: Install root dependencies
+        run: npm install --no-audit --no-fund
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/avm
+            ~/.avm
+            ~/.local/share/solana
+            ~/.cargo/registry
+            anchor/target
+          key: anchor-${{ runner.os }}-${{ env.ANCHOR_VERSION }}-${{ hashFiles('anchor/Cargo.lock') }}
+
+      - name: Install Solana CLI
+        run: |
+          [ -x ~/.local/share/solana/install/active_release/bin/solana ] || sh -c "$(curl -sSfL https://release.anza.xyz/${SOLANA_VERSION}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Install Anchor
+        run: |
+          [ -x ~/.cargo/bin/avm ] || cargo install --git https://github.com/solana-foundation/anchor avm --force
+          avm install "$ANCHOR_VERSION" || true
+          avm use "$ANCHOR_VERSION"
+          anchor --version
+
+      - name: Test wallet
+        run: solana-keygen new --no-bip39-passphrase --silent --force -o ~/.config/solana/id.json
+
+      # The program keypair is not committed; load the built .so at the declared program id instead.
+      - name: Build program
+        working-directory: anchor
+        run: anchor build --ignore-keys
+
+      - name: Run program tests on a local validator
+        working-directory: anchor
+        run: |
+          solana-test-validator --reset --quiet --ledger /tmp/test-ledger \
+            --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
+          until solana cluster-version -u http://127.0.0.1:8899 >/dev/null 2>&1; do sleep 1; done
+          ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET=$HOME/.config/solana/id.json \
+            node --test --experimental-strip-types tests/*.test.ts

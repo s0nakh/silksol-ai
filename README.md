@@ -9,6 +9,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
   <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
+  <a href="https://github.com/s0nakh/silksol-ai/actions/workflows/anchor.yml"><img src="https://img.shields.io/github/actions/workflow/status/s0nakh/silksol-ai/anchor.yml?branch=main&style=for-the-badge&logo=solana&label=CI%20Solana" alt="Solana program CI" /></a>
+  <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
 </p>
 
@@ -68,9 +70,25 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 
 ---
 
+## ⛓ On-chain Escrow Program (Devnet)
+
+The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — program ID [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+
+`initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
+
+With Phantom/Solflare connected on Devnet, **Lock Collateral** and **Trigger Oracle Event** in the dashboard sign real program transactions (0.01 Devnet SOL collateral as a USDC stand-in). cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+
+```bash
+cd anchor && anchor build
+solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
+node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+```
+
+---
+
 ## 🛠 Tech Stack
 
-- **Blockchain:** Solana Devnet, Compressed NFTs (cNFT / State Compression)
+- **Blockchain:** Solana Devnet, Anchor 1.2 escrow program (Rust), Compressed NFTs (cNFT / State Compression, simulated)
 - **Tokens & Escrow:** SPL-Token / Demo USDC, eKZT Settlement Abstraction
 - **Risk Engine:** Predictive Risk Scoring Logic & Parametric Oracle Simulator
 - **Frontend & UI:** React, TypeScript, Tailwind CSS, Recharts
