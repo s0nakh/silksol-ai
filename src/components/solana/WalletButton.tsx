@@ -3,6 +3,7 @@ import { WalletReadyState } from "@solana/wallet-adapter-base";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { LogOut, WalletCards } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,7 +16,7 @@ import {
 import { DemoTag } from "./DemoTag";
 
 export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
-  const { wallets, select, disconnect, publicKey, connected, connecting } = useWallet();
+  const { wallets, select, disconnect, publicKey, connected, connecting, wallet } = useWallet();
   const { connection } = useConnection();
   const [sol, setSol] = useState<number | null>(null);
 
@@ -34,13 +35,27 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
     };
   }, [publicKey, connection]);
 
+  // If the wallet popup never shows up or is dismissed, the adapter can stay "connecting" forever.
+  // Give up after 30 s so the user can retry instead of being stuck.
+  useEffect(() => {
+    if (!connecting) return;
+    const id = window.setTimeout(() => {
+      disconnect().catch(() => undefined);
+      toast.error(`${wallet?.adapter.name ?? "Wallet"} did not respond`, {
+        description: "Click the wallet icon in your browser toolbar, unlock it, make sure it is on Devnet, then press Connect wallet again.",
+        duration: 12000,
+      });
+    }, 30_000);
+    return () => window.clearTimeout(id);
+  }, [connecting, disconnect, wallet]);
+
   const addr = publicKey?.toBase58();
 
   if (!connected) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="secondary" disabled={connecting}>
+          <Button variant="secondary">
             <WalletCards className="size-4 text-primary" />
             {connecting ? "Connecting…" : "Connect wallet"}
             <DemoTag kind="DEVNET" className="hidden sm:inline-flex" />
@@ -49,6 +64,17 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
         <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="text-xs">Solana Devnet wallets</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {connecting && (
+            <>
+              <p className="px-2 py-1.5 text-[11px] leading-4 text-warning">
+                Waiting for {wallet?.adapter.name ?? "your wallet"} — approve the request in its popup (click the extension icon if no window appeared).
+              </p>
+              <DropdownMenuItem onClick={() => disconnect()}>
+                <LogOut className="size-4" /> Cancel and retry
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           {wallets.map((w) => {
             const installed = w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable;
             return (
