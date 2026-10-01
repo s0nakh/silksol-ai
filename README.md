@@ -18,7 +18,7 @@
   <a href="https://silksol.datariglab.kz/">🌐 Live dApp MVP</a> |
   <a href="https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193">🎥 dApp Demo Video</a> |
   <a href="https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09">🎤 Pitch Video</a> |
-  <a href="./docs/SilkSol-AI-Presentation.pdf">📊 Presentation (PDF)</a> |
+  <a href="https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link">📊 Presentation (PDF)</a> |
   <a href="./docs/ARCHITECTURE.md">📚 Documentation</a>
 </p>
 
@@ -126,6 +126,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 | Production build & TypeScript type-check | **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Insurer payout to a user wallet with memo (Review settlement) | ✅ [payout tx](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL to the beneficiary) |
+| Live insurer/oracle ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → payout | ✅ [payout tx](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
 | End-to-end on Devnet: lock collateral → trigger → payout (self-funded) | ✅ [lock tx](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [payout tx](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (settled in ~1.4 s) |
 
 ### E2E suite
@@ -158,6 +159,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **[Architecture Flow](./docs/ARCHITECTURE.md)** — end-to-end system design, data flow, and on-chain/off-chain boundaries.
 - **[Smart Contract Specs](./docs/CONTRACT_SPECS.md)** — Escrow Vault program accounts, instructions, and settlement trigger logic.
 - **[AIFC Sandbox Regulatory Notes](./docs/AIFC_SANDBOX.md)** — eKZT off-ramp compliance concept for the AIFC regulatory sandbox.
+- **[Presentation (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — pitch deck on Google Drive (a copy is kept in [`docs/`](./docs/SilkSol-AI-Presentation.pdf)).
 
 ---
 
@@ -193,12 +195,351 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
    ```bash
    cp .env.example .env
    # VITE_INSURER_URL points at the insurer/oracle Netlify Function (oracle/).
-   # Its treasury secret is set only in Netlify: netlify env:set SILKSOL_TREASURY_SECRET ... --secret
+   # Its treasury secret is set only in Netlify, never in git.
    ```
 
 4. **Launch local server:**
    ```bash
    npm run dev
+   ```
+
+5. **(Optional) Deploy your own insurer/oracle** — a free Netlify Function in [`oracle/`](./oracle):
+   ```bash
+   cd oracle && netlify sites:create --name <your-oracle>
+   netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
+   ```
+
+---
+
+---
+
+## 🇷🇺 Русский
+
+<p align="center"><em>Предиктивная аналитика рисков и протокол параметрических выплат для логистики Среднего коридора (ТМТМ) на Solana</em></p>
+
+[🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч-видео](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link) · [📚 Документация](./docs/ARCHITECTURE.md)
+
+### 💡 Краткое описание
+
+SilkSol AI — MVP B2B-приложения (dApp), которое объединяет аналитику рисков на основе телеметрии с автоматическими смарт-контрактами Solana. Оно показывает, как можно мгновенно компенсировать задержки грузов и разрешать споры на Транскаспийском международном транспортном маршруте (ТМТМ / Средний коридор).
+
+Классические страховые выплаты в цепочках поставок занимают 60–90+ дней из-за ручного документооборота и споров. SilkSol AI показывает, как проверенные данные телеметрии запускают автоматические выплаты в USDC по строгим правилам через некастодиальные эскроу-хранилища Solana. Решение изначально рассчитано на двухвалютный слой расчётов с eKZT (цифровым тенге) для будущей работы в регуляторной песочнице AIFC (МФЦА).
+
+### 🧑‍⚖️ Попробовать за 2 минуты (для судей)
+
+1. Установите [Phantom](https://phantom.com) → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
+2. Получите бесплатные Devnet SOL на [faucet.solana.com](https://faucet.solana.com) (нужны только для шага 5; выплата на шаге 4 вам ничего не стоит).
+3. Откройте [приложение](https://silksol.datariglab.kz/) → **Connect wallet → Phantom**.
+4. Прокрутите до блока **Autonomous settlement** и нажмите **Review settlement**. Подписывать ничего не нужно: страховщик SilkSol AI проводит страховой случай в блокчейне, и через несколько секунд **на ваш кошелёк приходит +0.01 Devnet SOL**. По ссылке `tx:` откроется транзакция в Solana Explorer вместе с пометкой (Memo) `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`.
+5. Полный цикл — в панели **Parametric policy & claim engine**: **Issue Parametric Policy** (вы подписываете премию 0.001 SOL) → **Lock Collateral & Sign** (страховщик блокирует для вас 0.01 SOL в эскроу-хранилище) → **Trigger Oracle Event** (оракул сообщает о задержке 96 ч, программа выплачивает вам).
+
+> Без кошелька всё тоже работает — в демо-режиме, с явно помеченными симулированными транзакциями.
+
+### 🏗 Архитектура системы
+
+```text
+ [IoT-датчики / GPS-трекеры / ж/д телеметрия]
+                        │  (Симулированный API телеметрии / вебхуки)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 1. Предиктивный движок рисков (аналитика и скоринг)     ║
+ ║  • Динамический индекс риска и прогноз задержек         ║
+ ╚═════════════════════════════════════════════════════════╝
+                        │  (Оценка риска / подписанные данные)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 2. Блокчейн-слой Solana (смарт-контракты в Devnet)      ║
+ ║  • Сжатые NFT (cNFT): неизменяемые журналы перевозок    ║
+ ║  • Эскроу-хранилище: автоматический залог в USDC        ║
+ ║  • Детерминированная выплата: параметрический триггер   ║
+ ║  • Абстракция eKZT: концепция вывода в песочнице AIFC   ║
+ ╚═════════════════════════════════════════════════════════╝
+                        │  (RPC кошелька Web3 / логи программы)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 3. Корпоративный дашборд (React / Tailwind)             ║
+ ║  • Отслеживание контейнеров и интерактивная карта       ║
+ ║  • Двухвалютный эскроу и журналы выплат                 ║
+ ╚═════════════════════════════════════════════════════════╝
+```
+
+### ✨ Ключевые возможности
+
+- **Статусы и индексация рисков:** отслеживание транзитных точек в каспийских портах (Актау/Курык) и региональных хабах.
+- **Сжатие состояния (cNFT):** недорогое хранение журналов аудита цепочки поставок в Solana.
+- **Прототип параметрического эскроу:** автоматическая выплата в USDC при подтверждённом превышении порога задержки (`dwell_time > threshold`).
+- **Выход через регуляторную песочницу:** концепция расчётов в eKZT (цифровом тенге) для интеграции с песочницей AIFC.
+- **Ноль бумаг:** мгновенные, прозрачные и проверяемые выплаты по событию.
+
+### ⛓ Эскроу-программа в блокчейне (Devnet)
+
+Параметрическое ядро работает в Solana как Anchor-программа [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — ID программы [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+
+`initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
+
+При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог и подписывает данные оракула в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата (0.01 Devnet SOL вместо USDC). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+
+```bash
+cd anchor && anchor build
+solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
+node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+```
+
+### 🛠 Технологии
+
+- **Блокчейн:** Solana Devnet, эскроу-программа на Anchor 1.2 (Rust), сжатые NFT (cNFT / State Compression, симуляция)
+- **Токены и эскроу:** SPL-Token / Demo USDC, абстракция расчётов в eKZT
+- **Движок рисков:** логика предиктивного скоринга и симулятор параметрического оракула
+- **Фронтенд и UI:** React, TypeScript, Tailwind CSS, Recharts
+- **Web3-интеграция:** `@solana/web3.js`, `@solana/wallet-adapter-react`
+- **Страховщик/оракул:** бессерверная функция Netlify ([`oracle/`](./oracle))
+
+### 🧪 Тестирование и E2E-проверка
+
+#### ✅ Статус проверки — всё зелёное (1 октября 2026)
+
+| Проверка | Результат |
+|---|---|
+| Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 пройдено** |
+| E2E-набор на локальной сборке | **14 / 14 пройдено** |
+| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 пройдено** |
+| Продакшн-сборка и проверка типов TypeScript | **Пройдено** |
+| Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
+| Выплата страховщика на кошелёк пользователя с Memo (Review settlement) | ✅ [транзакция выплаты](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL получателю) |
+| Живой страховщик/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → выплата | ✅ [транзакция выплаты](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
+| Полный цикл в Devnet: залог → триггер → выплата (за свой счёт) | ✅ [залог](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [выплата](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (~1.4 с) |
+
+#### E2E-набор
+
+Набор [Playwright](https://playwright.dev) (14 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
+
+| Набор | Что проверяется |
+|---|---|
+| **Дашборд и телеметрия** | Демо-предупреждение, KPI, точки маршрута Среднего коридора, оповещение о заторе в Актау, превышение порога простоя 18 ч по IoT. |
+| **Web3-кошелёк (демо-режим)** | Меню кошельков Phantom / Solflare для Devnet и корректный переход к симулированным подписям. |
+| **Фильтры грузов** | Фильтры In Transit / High Risk Delay / Escrow Triggered показывают нужные грузы. |
+| **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 eKZT); премия рассчитывается по ИИ-оценке риска. |
+| **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC. |
+| **Caspian Risk Vault** | Депозит Demo USDC обновляет долю; суммы больше баланса отклоняются. |
+| **Журнал cNFT** | Каждое событие полиса записывается как сжатая контрольная точка Merkle (лист + корень). |
+| **Эскроу-программа** | Панель полиса ссылается на развёрнутую в Devnet программу и показывает её живой статус. |
+
+Запуск:
+
+```bash
+npx playwright install chromium   # один раз скачать браузер
+npm run test:e2e                  # на локальном dev-сервере (запускается автоматически)
+npm run test:e2e:live             # на живом приложении silksol.datariglab.kz
+```
+
+### 📚 Документация и спецификации
+
+- **[Архитектура](./docs/ARCHITECTURE.md)** — устройство системы, потоки данных, граница между блокчейном и офчейном.
+- **[Спецификация смарт-контракта](./docs/CONTRACT_SPECS.md)** — аккаунты, инструкции и логика триггера эскроу-программы.
+- **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — концепция вывода в eKZT в регуляторной песочнице AIFC.
+- **[Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — питч-дек на Google Drive (копия лежит в [`docs/`](./docs/SilkSol-AI-Presentation.pdf)).
+
+### ⚠️ Статус MVP и интеллектуальная собственность
+
+- **Данные и телеметрия MVP:** этот публичный репозиторий — интерактивный MVP для хакатона. Вся телеметрия, метрики рисков и события оракула основаны на синтетических/симулированных данных, чтобы показать автоматический процесс без реальных датчиков.
+- **Детерминированные триггеры:** ИИ/ML отвечает за предиктивную оценку риска; решение о выплате принимает смарт-контракт по строгому правилу (`dwell_time > threshold`).
+- **Защита ИС:** собственные алгоритмы скоринга, параметры датасетов и веса моделей остаются конфиденциальными активами DataRigLab / SilkSol AI и работают в закрытой инфраструктуре.
+- **Регуляторная дорожная карта:** интеграция eKZT / цифрового тенге — структурное предложение для будущего тестирования в регуляторной песочнице AIFC.
+
+### 🚀 Локальный запуск
+
+**Требования:** Node.js (v18+), npm / yarn / pnpm.
+
+1. **Клонировать репозиторий:**
+   ```bash
+   git clone https://github.com/s0nakh/silksol-ai.git
+   cd silksol-ai
+   ```
+2. **Установить зависимости:**
+   ```bash
+   npm install
+   ```
+3. **Настроить переменные окружения:**
+   ```bash
+   cp .env.example .env
+   # VITE_INSURER_URL указывает на функцию страховщика/оракула в Netlify (oracle/).
+   # Секрет казны хранится только в Netlify и никогда не попадает в git.
+   ```
+4. **Запустить локальный сервер:**
+   ```bash
+   npm run dev
+   ```
+5. **(Необязательно) Развернуть своего страховщика/оракула** — бесплатная функция Netlify в [`oracle/`](./oracle):
+   ```bash
+   cd oracle && netlify sites:create --name <your-oracle>
+   netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
+   ```
+
+---
+
+## 🇰🇿 Қазақша
+
+<p align="center"><em>Solana-дағы Орта дәліз (ТХКБ) логистикасына арналған болжамды тәуекел талдауы және параметрлік төлем хаттамасы</em></p>
+
+[🌐 Қосымша](https://silksol.datariglab.kz/) · [🎥 Демо-бейне](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч-бейне](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link) · [📚 Құжаттама](./docs/ARCHITECTURE.md)
+
+### 💡 Қысқаша сипаттама
+
+SilkSol AI — телеметрияға негізделген тәуекел талдауын Solana-ның автоматты смарт-келісімшарттарымен біріктіретін B2B қосымшасының (dApp) MVP нұсқасы. Ол Транскаспий халықаралық көлік бағытында (ТХКБ / Орта дәліз) жүк кешігуінің өтемін лезде төлеуге және дауларды шешуге болатынын көрсетеді.
+
+Жеткізу тізбегіндегі дәстүрлі сақтандыру төлемдері қолмен жүргізілетін құжаттар мен даулардың салдарынан 60–90+ күнге созылады. SilkSol AI тексерілген телеметрия деректері Solana-ның кастодиалды емес эскроу қоймалары арқылы қатаң ережеге негізделген USDC төлемдерін қалай автоматты түрде іске қосатынын көрсетеді. Шешім болашақта AIFC (АХҚО) реттеушілік құмсалғышында жұмыс істеу үшін eKZT (цифрлық теңге) арқылы екі валюталы есеп айырысу қабатына бастан есептелген.
+
+### 🧑‍⚖️ 2 минутта байқап көріңіз (төрешілерге)
+
+1. [Phantom](https://phantom.com) әмиянын орнатыңыз → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
+2. [faucet.solana.com](https://faucet.solana.com) сайтынан тегін Devnet SOL алыңыз (тек 5-қадамға керек; 4-қадамдағы төлем сізге ештеңе тұрмайды).
+3. [Қосымшаны](https://silksol.datariglab.kz/) ашыңыз → **Connect wallet → Phantom**.
+4. **Autonomous settlement** блогына дейін төмен түсіп, **Review settlement** батырмасын басыңыз. Ешнәрсеге қол қоюдың қажеті жоқ: SilkSol AI сақтандырушысы сақтандыру жағдайын блокчейнде жүргізеді, бірнеше секундтан кейін **әмияныңызға +0.01 Devnet SOL түседі**. `tx:` сілтемесі транзакцияны Solana Explorer-де Memo белгісімен бірге ашады: `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`.
+5. Толық цикл — **Parametric policy & claim engine** панелінде: **Issue Parametric Policy** (0.001 SOL сыйлықақыға қол қоясыз) → **Lock Collateral & Sign** (сақтандырушы сіз үшін эскроу қоймасында 0.01 SOL бұғаттайды) → **Trigger Oracle Event** (оракул 96 сағаттық кешігу туралы хабарлайды, бағдарлама сізге төлейді).
+
+> Әмиянсыз да бәрі жұмыс істейді — демо-режимде, симуляция екені анық белгіленген транзакциялармен.
+
+### 🏗 Жүйе архитектурасы
+
+```text
+ [IoT датчиктері / GPS трекерлер / т/ж телеметриясы]
+                        │  (Симуляцияланған телеметрия API / вебхуктар)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 1. Болжамды тәуекел қозғалтқышы (талдау және скоринг)   ║
+ ║  • Динамикалық тәуекел индексі және кешігу болжамы      ║
+ ╚═════════════════════════════════════════════════════════╝
+                        │  (Тәуекел бағасы / қол қойылған деректер)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 2. Solana блокчейн қабаты (Devnet келісімшарттары)      ║
+ ║  • Сығылған NFT (cNFT): өзгермейтін тасымал журналдары  ║
+ ║  • Эскроу қоймасы: USDC-дегі автоматты кепіл            ║
+ ║  • Детерминирленген төлем: параметрлік триггер          ║
+ ║  • eKZT абстракциясы: AIFC құмсалғышы тұжырымы          ║
+ ╚═════════════════════════════════════════════════════════╝
+                        │  (Web3 әмиян RPC / бағдарлама логтары)
+                        ▼
+ ╔═════════════════════════════════════════════════════════╗
+ ║ 3. Корпоративтік дашборд (React / Tailwind)             ║
+ ║  • Контейнерлерді бақылау және интерактивті карта       ║
+ ║  • Екі валюталы эскроу және төлем журналдары            ║
+ ╚═════════════════════════════════════════════════════════╝
+```
+
+### ✨ Негізгі мүмкіндіктер
+
+- **Мәртебе және тәуекел индексі:** Каспий порттарындағы (Ақтау/Құрық) және аймақтық хабтардағы транзит нүктелерін бақылау.
+- **Күйді сығу (cNFT):** жеткізу тізбегінің аудит журналдарын Solana-да арзан сақтау.
+- **Параметрлік эскроу прототипі:** кешігу шегінен асқаны расталғанда USDC-мен автоматты төлем (`dwell_time > threshold`).
+- **Реттеушілік құмсалғыш арқылы шығу:** AIFC құмсалғышымен интеграцияға арналған eKZT (цифрлық теңге) есеп айырысу тұжырымдамасы.
+- **Қағазсыз:** оқиғаға негізделген лезде, ашық және тексерілетін төлем.
+
+### ⛓ Блокчейндегі эскроу бағдарламасы (Devnet)
+
+Параметрлік өзек Solana-да [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) Anchor бағдарламасы ретінде жұмыс істейді — бағдарлама ID [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+
+`initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
+
+Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұмыстағыдай бөлінеді: **SilkSol AI сақтандырушысының қазынасы** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) кепілді бұғаттайды және оракул деректеріне [серверлік функцияда](./oracle/netlify/functions/insurer.mts) қол қояды, ал **қосылған әмиян — төлемді алушы (beneficiary)** (USDC орнына 0.01 Devnet SOL). Әр транзакцияда SPL **Memo** бар (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), сондықтан Explorer-де операцияның мәні бірден көрінеді. cNFT журналы мен eKZT айырбасы әзірге симуляция. Сипаттама: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+
+```bash
+cd anchor && anchor build
+solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
+node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+```
+
+### 🛠 Технологиялар
+
+- **Блокчейн:** Solana Devnet, Anchor 1.2 эскроу бағдарламасы (Rust), сығылған NFT (cNFT / State Compression, симуляция)
+- **Токендер және эскроу:** SPL-Token / Demo USDC, eKZT есеп айырысу абстракциясы
+- **Тәуекел қозғалтқышы:** болжамды скоринг логикасы және параметрлік оракул симуляторы
+- **Фронтенд және UI:** React, TypeScript, Tailwind CSS, Recharts
+- **Web3 интеграциясы:** `@solana/web3.js`, `@solana/wallet-adapter-react`
+- **Сақтандырушы/оракул:** Netlify серверсіз функциясы ([`oracle/`](./oracle))
+
+### 🧪 Тестілеу және E2E тексеру
+
+#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 1 қазан)
+
+| Тексеру | Нәтиже |
+|---|---|
+| Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 өтті** |
+| Жергілікті құрастырмадағы E2E жиынтығы | **14 / 14 өтті** |
+| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 өтті** |
+| Продакшн құрастырма және TypeScript типтерін тексеру | **Өтті** |
+| Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
+| Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement) | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (алушыға +0.01 SOL) |
+| Тірі сақтандырушы/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → төлем | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
+| Devnet-тегі толық цикл: кепіл → триггер → төлем (өз есебінен) | ✅ [кепіл](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [төлем](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (~1.4 с) |
+
+#### E2E жиынтығы
+
+[Playwright](https://playwright.dev) жиынтығы (14 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
+
+| Жиынтық | Не тексеріледі |
+|---|---|
+| **Дашборд және телеметрия** | Демо-ескерту, KPI, Орта дәліз бағытының нүктелері, Ақтаудағы кептеліс туралы хабарлама, IoT бойынша 18 сағаттық тоқтап тұру шегінен асу. |
+| **Web3 әмиян (демо-режим)** | Devnet-ке арналған Phantom / Solflare әмиян мәзірі және симуляцияланған қолтаңбаға дұрыс ауысу. |
+| **Жүк сүзгілері** | In Transit / High Risk Delay / Escrow Triggered сүзгілері қажетті жүктерді көрсетеді. |
+| **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 eKZT); сыйлықақы ЖИ тәуекел бағасы бойынша есептеледі. |
+| **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды. |
+| **Caspian Risk Vault** | Demo USDC депозиті үлесті жаңартады; балансынан асатын сомалар қабылданбайды. |
+| **cNFT журналы** | Полистің әр оқиғасы сығылған Merkle бақылау нүктесі (жапырақ + түбір) ретінде жазылады. |
+| **Эскроу бағдарламасы** | Полис панелі Devnet-тегі бағдарламаға сілтеме береді және оның тірі мәртебесін көрсетеді. |
+
+Іске қосу:
+
+```bash
+npx playwright install chromium   # браузерді бір рет жүктеу
+npm run test:e2e                  # жергілікті dev-серверде (автоматты түрде іске қосылады)
+npm run test:e2e:live             # тірі қосымшада silksol.datariglab.kz
+```
+
+### 📚 Құжаттама және сипаттамалар
+
+- **[Архитектура](./docs/ARCHITECTURE.md)** — жүйе құрылымы, деректер ағыны, блокчейн мен офчейн арасындағы шекара.
+- **[Смарт-келісімшарт сипаттамасы](./docs/CONTRACT_SPECS.md)** — эскроу бағдарламасының аккаунттары, нұсқаулықтары және триггер логикасы.
+- **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC реттеушілік құмсалғышында eKZT арқылы шығу тұжырымдамасы.
+- **[Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — Google Drive-тағы питч-дек (көшірмесі [`docs/`](./docs/SilkSol-AI-Presentation.pdf) ішінде).
+
+### ⚠️ MVP мәртебесі және зияткерлік меншік
+
+- **MVP деректері мен телеметриясы:** бұл ашық репозиторий — хакатонға арналған интерактивті MVP. Барлық телеметрия, тәуекел көрсеткіштері мен оракул оқиғалары нақты датчиктерсіз автоматты процесті көрсету үшін синтетикалық/симуляцияланған деректерге негізделген.
+- **Детерминирленген триггерлер:** ЖИ/ML болжамды тәуекел бағасына жауап береді; төлем туралы шешімді смарт-келісімшарт қатаң ереже бойынша қабылдайды (`dwell_time > threshold`).
+- **ЗМ қорғау:** меншікті скоринг алгоритмдері, деректер жиынының параметрлері және модель салмақтары DataRigLab / SilkSol AI-дың құпия активтері болып қалады және жабық инфрақұрылымда жұмыс істейді.
+- **Реттеушілік жол картасы:** eKZT / цифрлық теңге интеграциясы — AIFC реттеушілік құмсалғышында болашақта сынауға арналған құрылымдық ұсыныс.
+
+### 🚀 Жергілікті іске қосу
+
+**Талаптар:** Node.js (v18+), npm / yarn / pnpm.
+
+1. **Репозиторийді клондау:**
+   ```bash
+   git clone https://github.com/s0nakh/silksol-ai.git
+   cd silksol-ai
+   ```
+2. **Тәуелділіктерді орнату:**
+   ```bash
+   npm install
+   ```
+3. **Орта айнымалыларын баптау:**
+   ```bash
+   cp .env.example .env
+   # VITE_INSURER_URL Netlify-дағы сақтандырушы/оракул функциясына сілтейді (oracle/).
+   # Қазына құпиясы тек Netlify-да сақталады және ешқашан git-ке түспейді.
+   ```
+4. **Жергілікті серверді іске қосу:**
+   ```bash
+   npm run dev
+   ```
+5. **(Міндетті емес) Өз сақтандырушыңызды/оракулыңызды орналастыру** — [`oracle/`](./oracle) ішіндегі тегін Netlify функциясы:
+   ```bash
+   cd oracle && netlify sites:create --name <your-oracle>
+   netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
    ```
 
 ---
@@ -207,47 +548,3 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
 *Published for Solana Colosseum Frontier Hackathon demonstration and evaluation.*
-
----
-
-## 🇷🇺 Русский
-
-**SilkSol AI** — B2B-приложение (dApp) для грузоперевозок по Среднему коридору (ТМТМ: Китай → Казахстан → Каспий → Азербайджан → Турция). Оно прогнозирует задержки грузов и автоматически выплачивает страховку через смарт-контракт Solana, если задержка превысила порог. Вместо 60–90 дней бумажной волокиты — выплата за секунды, прозрачно и проверяемо в блокчейне.
-
-**Ссылки:** [🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](./docs/SilkSol-AI-Presentation.pdf) · [📚 Документация](./docs/ARCHITECTURE.md)
-
-### Как протестировать за 2 минуты
-
-1. Установите [Phantom](https://phantom.com) → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
-2. Получите бесплатные тестовые SOL на [faucet.solana.com](https://faucet.solana.com) (нужны только для шага 5).
-3. Откройте [приложение](https://silksol.datariglab.kz/) → **Connect wallet → Phantom**.
-4. Внизу страницы, в блоке **Autonomous settlement**, нажмите **Review settlement**. Подписывать ничего не нужно: страховщик SilkSol AI проводит страховой случай в блокчейне, и через несколько секунд **на ваш кошелёк приходит +0.01 Devnet SOL**. По ссылке `tx:` видно транзакцию в Solana Explorer с пометкой (Memo) `SilkSol AI | Parametric payout | Cargo #JOL-8921 | …`.
-5. Полный цикл — в панели **Parametric policy & claim engine**: **Issue Parametric Policy** (вы платите премию 0.001 SOL) → **Lock Collateral & Sign** (страховщик блокирует 0.01 SOL в эскроу для вас) → **Trigger Oracle Event** (оракул сообщает о задержке 96 ч, программа платит вам).
-
-### Что работает в блокчейне
-
-Anchor-программа [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) развёрнута в Devnet: `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`задержка > порога`) → `settle_payout` → `close_vault`. Решение о выплате — строгое правило в смарт-контракте, без ИИ на блокчейне. Каждая транзакция подписана текстовым Memo с номером груза, полиса и хешем отчёта оракула. Журнал cNFT и конвертация в eKZT (цифровой тенге) пока симулируются.
-
-**Статус проверки:** 11/11 тестов программы, 14/14 E2E-тестов (локально и на живом сайте), реальные выплаты в Devnet — см. таблицу выше.
-
----
-
-## 🇰🇿 Қазақша
-
-**SilkSol AI** — Орта дәліз (ТХКБ: Қытай → Қазақстан → Каспий → Әзірбайжан → Түркия) бойынша жүк тасымалына арналған B2B қосымшасы (dApp). Ол жүктің кешігуін болжайды және кешігу белгіленген шектен асса, Solana смарт-келісімшарты арқылы сақтандыру өтемін автоматты түрде төлейді. 60–90 күндік қағазбастылықтың орнына — блокчейнде ашық әрі тексерілетін, бірнеше секундтық төлем.
-
-**Сілтемелер:** [🌐 Қосымша](https://silksol.datariglab.kz/) · [🎥 Демо-бейне](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](./docs/SilkSol-AI-Presentation.pdf) · [📚 Құжаттама](./docs/ARCHITECTURE.md)
-
-### 2 минутта қалай тексеруге болады
-
-1. [Phantom](https://phantom.com) әмиянын орнатыңыз → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
-2. [faucet.solana.com](https://faucet.solana.com) сайтынан тегін тест SOL алыңыз (тек 5-қадамға қажет).
-3. [Қосымшаны](https://silksol.datariglab.kz/) ашыңыз → **Connect wallet → Phantom**.
-4. Беттің төменгі жағындағы **Autonomous settlement** блогында **Review settlement** батырмасын басыңыз. Ештеңеге қол қоюдың қажеті жоқ: SilkSol AI сақтандырушысы сақтандыру жағдайын блокчейнде жүргізеді, бірнеше секундтан кейін **әмияныңызға +0.01 Devnet SOL түседі**. `tx:` сілтемесі арқылы транзакцияны Solana Explorer-де Memo белгісімен көресіз: `SilkSol AI | Parametric payout | Cargo #JOL-8921 | …`.
-5. Толық цикл — **Parametric policy & claim engine** панелінде: **Issue Parametric Policy** (0.001 SOL сыйлықақы төлейсіз) → **Lock Collateral & Sign** (сақтандырушы сіз үшін эскроуда 0.01 SOL бұғаттайды) → **Trigger Oracle Event** (оракул 96 сағаттық кешігу туралы хабарлайды, бағдарлама сізге төлейді).
-
-### Блокчейнде не жұмыс істейді
-
-[`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) Anchor бағдарламасы Devnet-те орналастырылған: `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`кешігу > шек`) → `settle_payout` → `close_vault`. Төлем туралы шешім — смарт-келісімшарттағы қатаң ереже, блокчейнде жасанды интеллект жоқ. Әр транзакцияда жүк нөмірі, полис нөмірі және оракул есебінің хеш-коды бар Memo мәтіні бар. cNFT журналы мен eKZT (цифрлық теңге) айырбасы әзірге симуляция.
-
-**Тексеру мәртебесі:** бағдарламаның 11/11 тесі, 14/14 E2E тесі (жергілікті және тірі сайтта), Devnet-тегі нақты төлемдер — жоғарыдағы кестені қараңыз.

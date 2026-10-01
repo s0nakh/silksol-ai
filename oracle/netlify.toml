@@ -1,8 +1,5 @@
 # Standalone Netlify site for the SilkSol AI insurer/oracle function (free tier).
-# Deploy from this folder: netlify deploy --prod
+# Deploy from this folder:  ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
 [build]
   publish = "public"
-  functions = "netlify/functions"
-
-[functions]
-  node_bundler = "esbuild"
+  functions = "dist-functions"

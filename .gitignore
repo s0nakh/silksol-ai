@@ -48,3 +48,6 @@ id.json
 
 # Netlify CLI link state
 .netlify/
+
+# Oracle function bundle (built by oracle/build.sh)
+oracle/dist-functions/
