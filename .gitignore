@@ -45,3 +45,6 @@ id.json
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Netlify CLI link state
+.netlify/
