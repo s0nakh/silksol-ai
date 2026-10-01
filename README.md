@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
   <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
-  <a href="https://github.com/s0nakh/silksol-ai/actions/workflows/anchor.yml"><img src="https://img.shields.io/github/actions/workflow/status/s0nakh/silksol-ai/anchor.yml?branch=main&style=for-the-badge&logo=solana&label=CI%20Solana" alt="Solana program CI" /></a>
+  <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-11%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
 </p>

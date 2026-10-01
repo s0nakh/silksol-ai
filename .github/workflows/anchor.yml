@@ -1,11 +1,7 @@
 name: Solana Program
 
+# Manual trigger for now; add `push: { branches: [main] }` and `pull_request:` to run on every commit.
 on:
-  push:
-    branches: [main]
-    paths: ["anchor/**", "src/components/solana/escrowProgram.ts", ".github/workflows/anchor.yml"]
-  pull_request:
-    paths: ["anchor/**", "src/components/solana/escrowProgram.ts", ".github/workflows/anchor.yml"]
   workflow_dispatch:
 
 env:
