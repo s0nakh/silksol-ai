@@ -26,12 +26,19 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
       return;
     }
     let active = true;
-    connection
-      .getBalance(publicKey)
-      .then((l) => active && setSol(l / LAMPORTS_PER_SOL))
-      .catch(() => active && setSol(null));
+    const load = () =>
+      connection
+        .getBalance(publicKey, "confirmed")
+        .then((l) => active && setSol(l / LAMPORTS_PER_SOL))
+        .catch(() => undefined);
+    load();
+    // Payouts arrive from the insurer without a wallet prompt, so keep the balance live.
+    const sub = connection.onAccountChange(publicKey, (acc) => active && setSol(acc.lamports / LAMPORTS_PER_SOL), "confirmed");
+    const id = window.setInterval(load, 10_000);
     return () => {
       active = false;
+      window.clearInterval(id);
+      connection.removeAccountChangeListener(sub).catch(() => undefined);
     };
   }, [publicKey, connection]);
 

@@ -4,7 +4,7 @@ import { insurerAction } from "@/lib/insurer.functions";
 import { DEMO_COLLATERAL_LAMPORTS, explorerAddress, lockCollateralOnChain, triggerAndSettleOnChain } from "./escrowProgram";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Check, FileSignature, Lock, Radar, ShieldCheck, Timer } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "./DemoTag";
@@ -30,6 +30,25 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
   const { connected, signMessage } = wallet;
   const [busy, setBusy] = useState(false);
   const [timer, setTimer] = useState<number | null>(null);
+  const [lowBalance, setLowBalance] = useState(false);
+  useEffect(() => {
+    if (!wallet.publicKey) {
+      setLowBalance(false);
+      return;
+    }
+    let active = true;
+    const check = () =>
+      connection
+        .getBalance(wallet.publicKey!, "confirmed")
+        .then((l) => active && setLowBalance(l < 0.002 * LAMPORTS_PER_SOL))
+        .catch(() => undefined);
+    check();
+    const id = window.setInterval(check, 10_000);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [wallet.publicKey, connection]);
 
   const issue = async () => {
     const coverage = 2500;
@@ -212,6 +231,11 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
             </div>
           ))}
         </div>
+        {policy.stage === "none" && lowBalance && (
+          <p className="rounded-md border border-warning/40 bg-warning/10 p-2 text-[11px] text-warning">
+            Your Devnet wallet is empty. Click <b>Review settlement</b> at the bottom first — SilkSol pays you 0.01 SOL, enough for the premium — or use faucet.solana.com.
+          </p>
+        )}
         {policy.stage === "none" && <Button className="w-full" onClick={issue} disabled={busy}><FileSignature className="size-4" /> {busy ? "Awaiting wallet…" : "Issue Parametric Policy"}</Button>}
         {policy.stage === "issued" && (
           <>

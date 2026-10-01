@@ -1,4 +1,4 @@
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { explorerTx, shortHash } from "./DemoTag";
@@ -21,6 +21,7 @@ function ago(unix: number | null) {
 /** Live proof, visible without a wallet, that the escrow program is deployed and used on Devnet. */
 export function OnChainProof({ refreshKey }: { refreshKey?: string | undefined }) {
   const { connection } = useConnection();
+  const { connected } = useWallet();
   const [status, setStatus] = useState<Status>("checking");
   const [activity, setActivity] = useState<Activity[]>([]);
 
@@ -100,7 +101,9 @@ export function OnChainProof({ refreshKey }: { refreshKey?: string | undefined }
         </div>
       )}
       <p className="mt-2 text-[10px] text-muted-foreground">
-        Connect a Devnet wallet to run Lock &amp; Trigger through this program.
+        {connected
+          ? "Wallet connected — Lock & Trigger run through this program on Devnet."
+          : "Connect a Devnet wallet to run Lock & Trigger through this program."}
       </p>
     </div>
   );
