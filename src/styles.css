@@ -58,9 +58,10 @@
   --chart-label: oklch(0.62 0.028 270);
 }
 
+/* Compositor-only pulse (transform + opacity): animating box-shadow repainted every frame. */
 @keyframes route-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 16%, transparent), 0 0 18px color-mix(in oklab, var(--primary) 55%, transparent); }
-  50% { box-shadow: 0 0 0 7px color-mix(in oklab, var(--primary) 8%, transparent), 0 0 28px color-mix(in oklab, var(--primary) 70%, transparent); }
+  0%, 100% { transform: scale(1); opacity: .55; }
+  50% { transform: scale(1.22); opacity: 1; }
 }
 
 @keyframes scan {
@@ -89,7 +90,7 @@
 .panel, .metric-card {
   border: 1px solid var(--border);
   background: linear-gradient(145deg, color-mix(in oklab, var(--card) 94%, var(--primary) 6%), var(--card));
-  backdrop-filter: blur(18px);
+  /* No backdrop-filter: the page behind panels is a flat colour, so the blur was invisible but costly. */
   border-radius: var(--radius-lg);
   box-shadow: inset 0 1px color-mix(in oklab, var(--foreground) 4%, transparent), 0 14px 45px oklch(0.06 0.01 270 / 0.24);
 }
@@ -107,11 +108,12 @@
 .map-grid { position: absolute; inset: 0; opacity: .34; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 34px 34px; mask-image: linear-gradient(to bottom, black, transparent 95%); }
 .route-rail { position: absolute; inset: 72px 5% auto; display: grid; grid-template-columns: repeat(5, 1fr); }
 .route-rail::before { content: ""; position: absolute; top: 17px; left: 9%; right: 9%; height: 2px; background: linear-gradient(90deg, var(--success) 0 43%, var(--primary) 43% 56%, var(--border) 56%); }
-.route-rail::after { content: ""; position: absolute; top: 16px; left: 0; width: 24%; height: 3px; background: linear-gradient(90deg, transparent, var(--success), transparent); animation: scan 3.4s linear infinite; }
+.route-rail::after { content: ""; position: absolute; top: 16px; left: 0; width: 24%; height: 3px; background: linear-gradient(90deg, transparent, var(--success), transparent); animation: scan 3.4s linear infinite; will-change: transform; }
 .route-stop { position: relative; z-index: 2; display: flex; min-width: 0; flex-direction: column; align-items: center; border: 0; background: transparent; color: var(--muted-foreground); font: inherit; cursor: pointer; }
 .route-dot { display: flex; width: 34px; height: 34px; align-items: center; justify-content: center; border-radius: 999px; border: 2px solid var(--border); background: var(--background); font-size: 10px; font-weight: 700; }
 .route-complete .route-dot { border-color: var(--success); background: color-mix(in oklab, var(--success) 15%, var(--background)); color: var(--success); }
-.route-active .route-dot { border-color: var(--primary); color: var(--primary); animation: route-pulse 2s ease-in-out infinite; }
+.route-active .route-dot { position: relative; border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 16%, transparent), 0 0 18px color-mix(in oklab, var(--primary) 55%, transparent); }
+.route-active .route-dot::after { content: ""; position: absolute; inset: -6px; border-radius: 999px; box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 14%, transparent), 0 0 22px color-mix(in oklab, var(--primary) 60%, transparent); animation: route-pulse 2s ease-in-out infinite; will-change: transform, opacity; pointer-events: none; }
 .route-city { margin-top: 10px; color: var(--foreground); font-size: 11px; font-weight: 600; white-space: nowrap; }
 .route-country { margin-top: 2px; font-size: 8px; text-transform: uppercase; }
 .map-event { position: absolute; top: 160px; left: 48%; display: flex; gap: .55rem; align-items: flex-start; padding: .65rem .75rem; border: 1px solid color-mix(in oklab, var(--warning) 30%, transparent); border-radius: var(--radius-md); color: var(--warning); background: color-mix(in oklab, var(--background) 90%, var(--warning) 10%); box-shadow: 0 0 25px color-mix(in oklab, var(--warning) 10%, transparent); }

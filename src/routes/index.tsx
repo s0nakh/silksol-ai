@@ -199,7 +199,7 @@ function Dashboard() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="border-b border-warning/30 bg-warning/10 px-4 py-1.5 text-center text-[11px] text-warning">Demo environment — balances, metrics, feeds and transactions are simulated or on Solana Devnet. No real funds.</div>
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
             <div className="solana-mark" aria-hidden="true"><span /><span /><span /></div>
