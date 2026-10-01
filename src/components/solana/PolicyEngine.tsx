@@ -1,5 +1,6 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { ekzt, sendDevnetSol } from "./devnetTx";
+import { PREMIUM_SOL, ekzt, sendPremium } from "./devnetTx";
+import { insurerAction } from "@/lib/insurer.functions";
 import { DEMO_COLLATERAL_LAMPORTS, explorerAddress, lockCollateralOnChain, triggerAndSettleOnChain } from "./escrowProgram";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Check, FileSignature, Lock, Radar, ShieldCheck, Timer } from "lucide-react";
@@ -10,7 +11,7 @@ import { DemoTag, explorerTx, mockTxHash, shortHash } from "./DemoTag";
 import { OnChainProof } from "./OnChainProof";
 
 export type PolicyStage = "none" | "issued" | "locked" | "paid";
-export type Policy = { stage: PolicyStage; coverage: number; premium: number; tx?: string; payoutMs?: number; vault?: string; onChain?: boolean };
+export type Policy = { stage: PolicyStage; coverage: number; premium: number; tx?: string; payoutMs?: number; vault?: string; onChain?: boolean; policyId?: string; insurer?: boolean };
 
 const COLLATERAL_SOL = DEMO_COLLATERAL_LAMPORTS / LAMPORTS_PER_SOL;
 
@@ -39,10 +40,10 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
     }
     setBusy(true);
     try {
-      const sig = await sendDevnetSol(wallet, connection);
+      const sig = await sendPremium(wallet, connection, cargoId, coverage);
       onUpdate({ ...base, tx: sig }, "Policy issued (Devnet tx)");
-      toast.success("Policy issued · 0.001 Devnet SOL", {
-        description: `Real devnet signature ${shortHash(sig)}`,
+      toast.success(`Policy issued · premium ${PREMIUM_SOL} Devnet SOL paid to SilkSol AI`, {
+        description: `Memo "SilkSol AI | Premium paid | Cargo #${cargoId}" · tx ${shortHash(sig)}`,
         action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
       });
     } catch (e) {
@@ -54,8 +55,25 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
 
   const lock = async () => {
     setBusy(true);
-    if (connected) {
+    if (connected && wallet.publicKey) {
       try {
+        // Preferred path: the SilkSol insurer treasury locks the collateral for this wallet.
+        const res = await insurerAction({
+          data: { action: "lock", beneficiary: wallet.publicKey.toBase58(), cargoId, riskScore: risk },
+        });
+        if (res.ok) {
+          onUpdate(
+            { ...policy, stage: "locked", tx: res.signature, vault: res.vault, policyId: res.policyId, onChain: true, insurer: true },
+            "Collateral locked by insurer (on-chain vault)",
+          );
+          toast.success(`Insurer locked ${COLLATERAL_SOL} Devnet SOL for your claim`, {
+            description: `Vault ${shortHash(res.vault)} · beneficiary = your wallet · tx ${shortHash(res.signature)}`,
+            action: { label: "Explorer", onClick: () => window.open(explorerTx(res.signature), "_blank") },
+          });
+          return;
+        }
+        if (res.reason !== "not_configured") throw new Error(res.message);
+        // Fallback when the server treasury isn't configured: self-funded vault signed by the wallet.
         const { signature, vault } = await lockCollateralOnChain(wallet, connection, cargoId);
         onUpdate({ ...policy, stage: "locked", tx: signature, vault, onChain: true }, "Collateral locked (on-chain vault)");
         toast.success(`Collateral locked on-chain · ${COLLATERAL_SOL} Devnet SOL`, {
@@ -86,6 +104,37 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
   };
 
   const trigger = async () => {
+    if (policy.insurer && policy.policyId && wallet.publicKey) {
+      setBusy(true);
+      const start = performance.now();
+      const id = window.setInterval(() => setTimer(performance.now() - start), 50);
+      try {
+        const res = await insurerAction({
+          data: {
+            action: "settle",
+            beneficiary: wallet.publicKey.toBase58(),
+            cargoId,
+            riskScore: risk,
+            policyId: policy.policyId,
+          },
+        });
+        if (!res.ok) throw new Error(res.message);
+        const ms = Math.round(performance.now() - start);
+        onUpdate({ ...policy, stage: "paid", tx: res.signature, payoutMs: ms }, "Claim paid out to wallet (on-chain)");
+        toast.success(`+${COLLATERAL_SOL} Devnet SOL received from SilkSol AI`, {
+          description: `Oracle → trigger → payout to your wallet · tx ${shortHash(res.signature)} · ${ms} ms`,
+          action: { label: "Explorer", onClick: () => window.open(explorerTx(res.signature), "_blank") },
+          duration: 15000,
+        });
+      } catch (e) {
+        toast.error("Settlement failed", { description: e instanceof Error ? e.message : "Retry the trigger." });
+      } finally {
+        window.clearInterval(id);
+        setTimer(null);
+        setBusy(false);
+      }
+      return;
+    }
     if (policy.onChain && policy.vault && connected) {
       setBusy(true);
       const start = performance.now();
@@ -168,7 +217,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
           <>
             <Button className="w-full" onClick={lock} disabled={busy}><Lock className="size-4" /> {busy ? "Awaiting signature…" : "Lock Collateral & Sign (Devnet)"}</Button>
             {connected ? (
-              <p className="text-[10px] text-muted-foreground">Locks {COLLATERAL_SOL} Devnet SOL in a SilkSol escrow vault PDA (real program call).</p>
+              <p className="text-[10px] text-muted-foreground">The SilkSol insurer locks {COLLATERAL_SOL} Devnet SOL in an escrow vault PDA with your wallet as beneficiary (real program call).</p>
             ) : (
               <p className="text-[10px] text-muted-foreground">Wallet disconnected — a simulated signature will be used.</p>
             )}
@@ -184,7 +233,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
             <p className="flex items-center gap-2 font-semibold text-success"><Check className="size-4" /> Claim Paid Out · {policy.coverage.toLocaleString()} Demo USDC <DemoTag kind={policy.onChain ? "DEVNET" : "SIMULATED"} /></p>
             {policy.onChain && policy.vault && (
               <p className="mt-0.5 text-[11px] text-muted-foreground">
-                On-chain: {COLLATERAL_SOL} Devnet SOL released by the escrow program ·{" "}
+                On-chain: {COLLATERAL_SOL} Devnet SOL {policy.insurer ? "paid to your wallet" : "released"} by the escrow program ·{" "}
                 <a className="font-mono text-primary" href={explorerAddress(policy.vault)} target="_blank" rel="noreferrer">vault {shortHash(policy.vault)}</a>
               </p>
             )}

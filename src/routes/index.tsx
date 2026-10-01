@@ -44,8 +44,9 @@ import { CaspianVault } from "@/components/solana/CaspianVault";
 import { AuditDrawer, type AuditLog } from "@/components/solana/AuditDrawer";
 import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/PolicyEngine";
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/DemoTag";
-import { ekzt, sendDevnetSol } from "@/components/solana/devnetTx";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { ekzt } from "@/components/solana/devnetTx";
+import { insurerAction } from "@/lib/insurer.functions";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -140,25 +141,37 @@ function Dashboard() {
   const [settled, setSettled] = useState(false);
   const [settling, setSettling] = useState(false);
   const [settleSig, setSettleSig] = useState<string | null>(null);
+  const [settleOnChain, setSettleOnChain] = useState(false);
   const wallet = useWallet();
-  const { connection } = useConnection();
   const reviewSettlement = async () => {
     if (!wallet.connected) {
       setSettled(true);
       toast.success("Settlement acknowledged (Simulated)", { description: `2,500 Demo USDC · (or ${ekzt(2500)} via AIFC Gateway)` });
       return;
     }
+    if (!wallet.publicKey) return;
     setSettling(true);
     try {
-      const sig = await sendDevnetSol(wallet, connection);
-      setSettleSig(sig);
+      // The SilkSol insurer runs the whole claim on-chain and pays this wallet — no signature needed.
+      const res = await insurerAction({
+        data: { action: "instant", beneficiary: wallet.publicKey.toBase58(), cargoId: "JOL-8921", riskScore: 68 },
+      });
+      if (!res.ok && res.reason === "not_configured") {
+        setSettled(true);
+        toast.success("Settlement acknowledged (Simulated)", { description: "Insurer treasury is offline — no on-chain payout was made." });
+        return;
+      }
+      if (!res.ok) throw new Error(res.message);
+      setSettleSig(res.signature);
+      setSettleOnChain(true);
       setSettled(true);
-      toast.success("Devnet settlement signed · 0.001 SOL", {
-        description: `2,500 Demo USDC · (or ${ekzt(2500)} via AIFC Gateway) · tx ${shortHash(sig)}`,
-        action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
+      toast.success("+0.01 Devnet SOL received from SilkSol AI", {
+        description: `Parametric payout for cargo #JOL-8921 · memo "SilkSol AI | Parametric payout…" · tx ${shortHash(res.signature)}`,
+        action: { label: "Explorer", onClick: () => window.open(explorerTx(res.signature), "_blank") },
+        duration: 15000,
       });
     } catch (e) {
-      toast.error("Devnet transaction failed or rejected", { description: e instanceof Error ? e.message : "Try airdropping Devnet SOL first." });
+      toast.error("Devnet payout failed", { description: e instanceof Error ? e.message : "Please retry in a few seconds." });
     } finally {
       setSettling(false);
     }
@@ -338,7 +351,7 @@ function Dashboard() {
             <div className="settlement-result">
               <div className="flex items-start gap-3">
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-md ${settled ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}`}>{settled ? <Check className="size-5" /> : <Zap className="size-5" />}</div>
-                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p><p className="mt-0.5 text-xs text-muted-foreground">(or {ekzt(2500)} via AIFC Gateway)</p></div>
+                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p><p className="mt-0.5 text-xs text-muted-foreground">(or {ekzt(2500)} via AIFC Gateway)</p>{settleOnChain ? <p className="mt-1 text-xs font-semibold text-success">On-chain: +0.01 Devnet SOL paid to your wallet by the escrow program</p> : <p className="mt-1 text-[11px] text-muted-foreground">{wallet.connected ? "Your connected wallet receives a real 0.01 Devnet SOL payout." : "Connect a Devnet wallet to receive a real 0.01 SOL payout."}</p>}</div>
               </div>
               <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center">
                 <a href={settleSig ? explorerTx(settleSig) : "https://explorer.solana.com/?cluster=devnet"} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:text-primary/80">tx: {settleSig ? shortHash(settleSig) : "5K9x...7P2q"} <ExternalLink className="size-3" /></a>

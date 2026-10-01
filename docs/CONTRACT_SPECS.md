@@ -44,12 +44,24 @@ No machine-learning inference runs on-chain. The Predictive Risk Engine's scorin
 
 ## Dashboard integration
 
-With a Phantom/Solflare wallet connected on Devnet, the Policy Engine panel calls the real program:
+With a Phantom/Solflare wallet connected on Devnet, the dashboard runs real transactions. Roles are split the way they would be in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) funds vaults and signs oracle telemetry on the server; the **connected wallet is the shipper / beneficiary** and receives the payout.
 
-1. **Lock Collateral & Sign** → `initialize_vault` (0.01 Devnet SOL; the wallet acts as insurer, oracle and beneficiary for the demo).
-2. **Trigger Oracle Event** → one transaction with `submit_telemetry(96h)` → `evaluate_trigger` → `settle_payout`.
+1. **Issue Parametric Policy** → the wallet pays a 0.001 Devnet SOL premium to the treasury (wallet signs).
+2. **Lock Collateral & Sign** → the treasury calls `initialize_vault` (0.01 Devnet SOL, `beneficiary` = the connected wallet).
+3. **Trigger Oracle Event** → one treasury-signed transaction: `submit_telemetry(96h)` → `evaluate_trigger` → `settle_payout` → `close_vault` (rent back to the treasury).
+4. **Review settlement** (bottom panel) → all of the above for cargo #JOL-8921 in a single transaction — one click, no signature, **+0.01 Devnet SOL appears in the wallet**.
 
-Both signatures link to Solana Explorer. Without a wallet the dashboard falls back to clearly labelled simulated transactions.
+Every transaction carries an [SPL Memo](https://spl.solana.com/memo) so it is self-describing in Explorer and in the wallet history:
+
+```text
+SilkSol AI | Premium paid | Cargo #JOL-8921 | Cover 2,500 Demo USDC
+SilkSol AI | Collateral locked | Cargo #JOL-8921 | Policy 1790868026788 | Trigger: delay > 72h
+SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | Policy 1790868026788 | Report sha256:<64 hex>
+```
+
+`Report sha256` is the hash of the oracle report (cargo, policy, beneficiary, dwell, threshold, risk score) that caused the payout, so the off-chain evidence can be audited against the on-chain record.
+
+The treasury secret lives only in the server environment (`SILKSOL_TREASURY_SECRET`); the server function throttles requests per wallet and refuses to pay below a 0.05 SOL treasury floor. If the secret is not configured, Lock/Trigger fall back to a self-funded vault signed by the wallet. Without a wallet the dashboard uses clearly labelled simulated transactions.
 
 ## eKZT Off-Ramp Abstraction
 
