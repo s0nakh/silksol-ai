@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "./DemoTag";
+import { OnChainProof } from "./OnChainProof";
 
 export type PolicyStage = "none" | "issued" | "locked" | "paid";
 export type Policy = { stage: PolicyStage; coverage: number; premium: number; tx?: string; payoutMs?: number; vault?: string; onChain?: boolean };
@@ -191,6 +192,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
             <p className="mt-1 text-muted-foreground">Settled in {policy.payoutMs} ms · <a className="font-mono text-primary" href={policy.tx ? explorerTx(policy.tx) : "#"} target="_blank" rel="noreferrer">tx {policy.tx ? shortHash(policy.tx) : ""}</a></p>
           </div>
         )}
+        <OnChainProof refreshKey={policy.onChain ? policy.tx : undefined} />
       </div>
     </div>
   );

@@ -89,6 +89,19 @@ test.describe("Cargo filters", () => {
   }
 });
 
+test.describe("On-chain escrow program", () => {
+  test("policy engine links to the deployed Devnet program", async ({ page }) => {
+    const proof = policyEngine(page).getByTestId("onchain-proof");
+    await expect(proof).toContainText("On-chain escrow program");
+    await expect(proof.getByRole("link", { name: /Gu7g\.\.\.Ar9Z/ })).toHaveAttribute(
+      "href",
+      "https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet",
+    );
+    // Status resolves either way; it must never stay stuck or crash the panel.
+    await expect(proof).toContainText(/Live on Devnet|Devnet RPC unreachable/, { timeout: 20_000 });
+  });
+});
+
 test.describe("Parametric policy lifecycle", () => {
   test("issue → lock collateral → oracle trigger → claim paid out", async ({ page }) => {
     const row = cargoRow(page, "MCC-2048");
