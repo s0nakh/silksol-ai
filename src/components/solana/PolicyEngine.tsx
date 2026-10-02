@@ -141,7 +141,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
         const ms = Math.round(performance.now() - start);
         onUpdate({ ...policy, stage: "paid", tx: res.signature, payoutMs: ms }, "Claim paid out to wallet (on-chain)");
         toast.success(`+${COLLATERAL_SOL} Devnet SOL received from SilkSol AI`, {
-          description: `Oracle → trigger → payout to your wallet · tx ${shortHash(res.signature)} · ${ms} ms`,
+          description: `Cargo #${cargoId} · oracle → trigger → payout to your wallet · tx ${shortHash(res.signature)} · ${ms} ms`,
           action: { label: "Explorer", onClick: () => window.open(explorerTx(res.signature), "_blank") },
           duration: 15000,
         });
@@ -163,7 +163,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
         const ms = Math.round(performance.now() - start);
         onUpdate({ ...policy, stage: "paid", tx: sig, payoutMs: ms }, "Claim paid out (on-chain)");
         toast.success(`Claim Paid Out on-chain · ${COLLATERAL_SOL} Devnet SOL`, {
-          description: `submit_telemetry → evaluate_trigger → settle_payout · tx ${shortHash(sig)} · ${ms} ms`,
+          description: `Cargo #${cargoId} · submit_telemetry → evaluate_trigger → settle_payout · tx ${shortHash(sig)} · ${ms} ms`,
           action: { label: "Explorer", onClick: () => window.open(explorerTx(sig), "_blank") },
         });
       } catch (e) {
@@ -187,7 +187,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
       }
       const tx = mockTxHash();
       onUpdate({ ...policy, stage: "paid", tx, payoutMs: Math.round(target), onChain: false }, "Claim paid out");
-      toast.success(`Claim Paid Out · ${policy.coverage.toLocaleString()} Demo USDC`, {
+      toast.success(`Claim Paid Out · cargo #${cargoId} · ${policy.coverage.toLocaleString()} Demo USDC`, {
         description: `(or ${ekzt(policy.coverage)} via AIFC Gateway) · Mock tx ${shortHash(tx)} · ${Math.round(target)} ms`,
         action: { label: "Explorer", onClick: () => window.open(explorerTx(tx), "_blank") },
       });

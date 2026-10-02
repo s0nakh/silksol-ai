@@ -26,7 +26,7 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -46,6 +46,7 @@ import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/Polic
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/DemoTag";
 import { ekzt } from "@/components/solana/devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
+import { SIMULATED_DWELL_HOURS, TRIGGER_THRESHOLD_HOURS } from "@/components/solana/escrowProgram";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
@@ -138,35 +139,74 @@ function Dashboard() {
     risk: 68,
   });
   const [filter, setFilter] = useState("All cargoes");
-  const [settled, setSettled] = useState(false);
   const [settling, setSettling] = useState(false);
-  const [settleSig, setSettleSig] = useState<string | null>(null);
-  const [settleOnChain, setSettleOnChain] = useState(false);
   const wallet = useWallet();
+  const [policies, setPolicies] = useState<Record<string, Policy>>({});
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [walletUsdc, setWalletUsdc] = useState(10000);
+  const [staked, setStaked] = useState(0);
+
+  const policyOf = (id: string) => policies[id] ?? emptyPolicy;
+  const updatePolicy = (id: string, p: Policy, event: string) => {
+    // A simulated claim can be re-settled on-chain later; credit the demo USDC only once.
+    if (p.stage === "paid" && policies[id]?.stage !== "paid") setWalletUsdc((w) => w + p.coverage);
+    setPolicies((prev) => ({ ...prev, [id]: p }));
+    setLogs((prev) => [
+      ...prev,
+      { id: prev.length + 1, time: new Date().toLocaleTimeString(), event, cargo: id, leaf: mockTxHash().slice(0, 44), root: mockTxHash().slice(0, 44) },
+    ]);
+  };
+
+  // Policies and payouts belong to the connected wallet: on disconnect or account switch,
+  // clear them and their notifications so the next wallet starts from a clean demo.
+  const walletKey = wallet.publicKey?.toBase58() ?? null;
+  const prevWalletKey = useRef(walletKey);
+  useEffect(() => {
+    const prev = prevWalletKey.current;
+    prevWalletKey.current = walletKey;
+    if (prev === null || prev === walletKey) return;
+    toast.dismiss();
+    setPolicies({});
+    setWalletUsdc(10000);
+  }, [walletKey]);
+
+  // The settlement panel always acts on the cargo selected in the table.
+  const selectedPolicy = policyOf(selectedCargo.id);
+  const settled = selectedPolicy.stage === "paid";
+  const settleOnChain = settled && !!selectedPolicy.onChain;
+  const settleSig = settleOnChain ? selectedPolicy.tx : undefined;
+
   const reviewSettlement = async () => {
+    const cargo = selectedCargo;
+    const coverage = 2500;
+    const paid = { stage: "paid" as const, coverage, premium: premiumFor(cargo.risk, coverage) };
     if (!wallet.connected) {
-      setSettled(true);
-      toast.success("Settlement acknowledged (Simulated)", { description: `2,500 Demo USDC · (or ${ekzt(2500)} via AIFC Gateway)` });
+      updatePolicy(cargo.id, { ...paid, tx: mockTxHash(), onChain: false, payoutMs: 0 }, "Settlement acknowledged (simulated)");
+      toast.success(`Settlement acknowledged for cargo #${cargo.id} (Simulated)`, { description: `${coverage.toLocaleString()} Demo USDC · (or ${ekzt(coverage)} via AIFC Gateway)` });
       return;
     }
     if (!wallet.publicKey) return;
     setSettling(true);
+    const start = performance.now();
     try {
       // The SilkSol insurer runs the whole claim on-chain and pays this wallet — no signature needed.
       const res = await insurerAction({
-        data: { action: "instant", beneficiary: wallet.publicKey.toBase58(), cargoId: "JOL-8921", riskScore: 68 },
+        data: { action: "instant", beneficiary: wallet.publicKey.toBase58(), cargoId: cargo.id, riskScore: cargo.risk },
       });
       if (!res.ok && res.reason === "not_configured") {
-        setSettled(true);
-        toast.success("Settlement acknowledged (Simulated)", { description: "Insurer treasury is offline — no on-chain payout was made." });
+        updatePolicy(cargo.id, { ...paid, tx: mockTxHash(), onChain: false, payoutMs: 0 }, "Settlement acknowledged (simulated)");
+        toast.success(`Settlement acknowledged for cargo #${cargo.id} (Simulated)`, { description: "Insurer treasury is offline — no on-chain payout was made." });
         return;
       }
       if (!res.ok) throw new Error(res.message);
-      setSettleSig(res.signature);
-      setSettleOnChain(true);
-      setSettled(true);
+      const ms = Math.round(performance.now() - start);
+      updatePolicy(
+        cargo.id,
+        { ...paid, tx: res.signature, vault: res.vault, policyId: res.policyId, onChain: true, insurer: true, payoutMs: ms },
+        "Parametric payout to wallet (on-chain)",
+      );
       toast.success("+0.01 Devnet SOL received from SilkSol AI", {
-        description: `Parametric payout for cargo #JOL-8921 · memo "SilkSol AI | Parametric payout…" · tx ${shortHash(res.signature)}`,
+        description: `Parametric payout for cargo #${cargo.id} · memo "${res.memo.split(" | Report")[0]}" · tx ${shortHash(res.signature)}`,
         action: { label: "Explorer", onClick: () => window.open(explorerTx(res.signature), "_blank") },
         duration: 15000,
       });
@@ -175,20 +215,6 @@ function Dashboard() {
     } finally {
       setSettling(false);
     }
-  };
-  const [policies, setPolicies] = useState<Record<string, Policy>>({});
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [walletUsdc, setWalletUsdc] = useState(10000);
-  const [staked, setStaked] = useState(0);
-
-  const policyOf = (id: string) => policies[id] ?? emptyPolicy;
-  const updatePolicy = (id: string, p: Policy, event: string) => {
-    setPolicies((prev) => ({ ...prev, [id]: p }));
-    if (p.stage === "paid") setWalletUsdc((w) => w + p.coverage);
-    setLogs((prev) => [
-      ...prev,
-      { id: prev.length + 1, time: new Date().toLocaleTimeString(), event, cargo: id, leaf: mockTxHash().slice(0, 44), root: mockTxHash().slice(0, 44) },
-    ]);
   };
 
   const visibleCargoes = useMemo(
@@ -343,9 +369,9 @@ function Dashboard() {
           <div className="relative grid gap-6 p-5 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:p-7">
             <div>
               <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary"><CircleDollarSign className="size-4" /> Autonomous settlement <DemoTag kind={settleOnChain ? "DEVNET" : "SIMULATED"} /></div>
-              <h2 className="text-lg font-semibold">Smart contract trigger</h2>
-              <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Delay at Aktau Port exceeded the insured 18-hour threshold. Oracle consensus confirmed across 8 sources.</p>
-              <div className="mt-4 flex flex-wrap gap-2"><span className="condition-chip"><Clock3 className="size-3" /> Actual 21.6 hrs</span><span className="condition-chip"><ShieldCheck className="size-3" /> Policy verified</span></div>
+              <h2 className="text-lg font-semibold">Smart contract trigger · #{selectedCargo.id}</h2>
+              <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Oracle event for cargo #{selectedCargo.id} ({selectedCargo.location}): delay of {SIMULATED_DWELL_HOURS} h exceeded the insured {TRIGGER_THRESHOLD_HOURS}-hour threshold. Select another cargo in the table to settle its policy.</p>
+              <div className="mt-4 flex flex-wrap gap-2"><span className="condition-chip"><Clock3 className="size-3" /> Delay {SIMULATED_DWELL_HOURS} h (simulated)</span><span className="condition-chip"><ShieldCheck className="size-3" /> Trigger &gt; {TRIGGER_THRESHOLD_HOURS} h</span></div>
             </div>
             <div className="hidden items-center gap-2 lg:flex"><div className="h-px w-12 bg-border" /><div className="flex size-10 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary shadow-glow"><Zap className="size-4" /></div><div className="h-px w-12 bg-border" /></div>
             <div className="settlement-result">

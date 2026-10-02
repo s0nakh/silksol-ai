@@ -52,7 +52,7 @@ test.describe("Dashboard & telemetry", () => {
     await expect(iot).toContainText("21.6h");
     await expect(iot).toContainText("+3.6h over");
     await expect(
-      page.getByText("Delay at Aktau Port exceeded the insured 18-hour threshold."),
+      page.getByText(/delay of 96 h exceeded the insured 72-hour threshold/),
     ).toBeVisible();
   });
 });
@@ -141,9 +141,29 @@ test.describe("Autonomous settlement", () => {
     await expect(page.getByText("Compensation triggered")).toBeVisible();
     await page.getByRole("button", { name: /Review settlement/ }).click();
 
-    await expect(page.getByText("Settlement acknowledged (Simulated)")).toBeVisible();
+    await expect(
+      page.getByText("Settlement acknowledged for cargo #JOL-8921 (Simulated)"),
+    ).toBeVisible();
     await expect(page.getByText("Settlement acknowledged", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: /Acknowledged/ })).toBeDisabled();
+  });
+
+  test("settles the cargo selected in the table, not a fixed one", async ({ page }) => {
+    await cargoRow(page, "KZL-4107").click();
+    await expect(
+      page.getByRole("heading", { name: "Smart contract trigger · #KZL-4107" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /Review settlement/ }).click();
+
+    await expect(
+      page.getByText("Settlement acknowledged for cargo #KZL-4107 (Simulated)"),
+    ).toBeVisible();
+    await expect(cargoRow(page, "KZL-4107")).toContainText("Claim Paid Out");
+    await expect(cargoRow(page, "JOL-8921")).not.toContainText("Claim Paid Out");
+
+    // Another cargo still has its own, unsettled claim.
+    await cargoRow(page, "TRK-7782").click();
+    await expect(page.getByRole("button", { name: /Review settlement/ })).toBeEnabled();
   });
 });
 
