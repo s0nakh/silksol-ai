@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
-  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-14%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
+  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-15%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
   <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-11%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
@@ -90,7 +90,7 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 
 ## ⛓ On-chain Escrow Program (Devnet)
 
-The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — program ID [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — program ID [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
@@ -116,13 +116,13 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ## 🧪 Testing & E2E Validation
 
-### ✅ Verification status — all green (Oct 1, 2026)
+### ✅ Verification status — all green (Oct 2, 2026)
 
 | Check | Result |
 |---|---|
 | Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 passed** |
-| E2E suite against a local build | **14 / 14 passed** |
-| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 passed** |
+| E2E suite against a local build | **15 / 15 passed** |
+| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 passed** |
 | Production build & TypeScript type-check | **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Insurer payout to a user wallet with memo (Review settlement) | ✅ [payout tx](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL to the beneficiary) |
@@ -131,7 +131,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### E2E suite
 
-A [Playwright](https://playwright.dev) suite (14 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
+A [Playwright](https://playwright.dev) suite (15 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
 
 | Suite | Coverage |
 |---|---|
@@ -139,7 +139,7 @@ A [Playwright](https://playwright.dev) suite (14 tests, [`e2e/dashboard.spec.ts`
 | **Web3 Wallet (demo mode)** | Phantom / Solflare Devnet wallet menu and graceful fallback to simulated signatures. |
 | **Cargo Filters** | In Transit / High Risk Delay / Escrow Triggered filters isolate the right shipments. |
 | **Parametric Policy Lifecycle** | Issue → Lock Collateral & Sign → Trigger Oracle Event → Claim Paid Out (2,500 Demo USDC ≈ 1,250,000 eKZT); premium priced from the AI risk score. |
-| **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout. |
+| **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout and settles the cargo selected in the table, not a fixed one. |
 | **Caspian Risk Vault** | Demo USDC deposit updates stake; amounts above the wallet balance are rejected. |
 | **cNFT Audit Trail** | Each policy event is logged as a compressed Merkle checkpoint (leaf + root). |
 | **On-chain Escrow Program** | Policy panel links to the deployed Devnet program and shows its live status. |
@@ -212,6 +212,11 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 ---
 
+## 📜 License & Copyright
+
+Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
+*Published for Solana Colosseum Frontier Hackathon demonstration and evaluation.*
+
 ---
 
 ## 🇷🇺 Русский
@@ -274,7 +279,7 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 
 ### ⛓ Эскроу-программа в блокчейне (Devnet)
 
-Параметрическое ядро работает в Solana как Anchor-программа [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — ID программы [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+Параметрическое ядро работает в Solana как Anchor-программа [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) — ID программы [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
@@ -297,13 +302,13 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### 🧪 Тестирование и E2E-проверка
 
-#### ✅ Статус проверки — всё зелёное (1 октября 2026)
+#### ✅ Статус проверки — всё зелёное (2 октября 2026)
 
 | Проверка | Результат |
 |---|---|
 | Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 пройдено** |
-| E2E-набор на локальной сборке | **14 / 14 пройдено** |
-| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 пройдено** |
+| E2E-набор на локальной сборке | **15 / 15 пройдено** |
+| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 пройдено** |
 | Продакшн-сборка и проверка типов TypeScript | **Пройдено** |
 | Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Выплата страховщика на кошелёк пользователя с Memo (Review settlement) | ✅ [транзакция выплаты](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL получателю) |
@@ -312,7 +317,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 #### E2E-набор
 
-Набор [Playwright](https://playwright.dev) (14 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
+Набор [Playwright](https://playwright.dev) (15 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
 
 | Набор | Что проверяется |
 |---|---|
@@ -320,7 +325,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 | **Web3-кошелёк (демо-режим)** | Меню кошельков Phantom / Solflare для Devnet и корректный переход к симулированным подписям. |
 | **Фильтры грузов** | Фильтры In Transit / High Risk Delay / Escrow Triggered показывают нужные грузы. |
 | **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 eKZT); премия рассчитывается по ИИ-оценке риска. |
-| **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC. |
+| **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC и проводит её именно по грузу, выбранному в таблице. |
 | **Caspian Risk Vault** | Депозит Demo USDC обновляет долю; суммы больше баланса отклоняются. |
 | **Журнал cNFT** | Каждое событие полиса записывается как сжатая контрольная точка Merkle (лист + корень). |
 | **Эскроу-программа** | Панель полиса ссылается на развёрнутую в Devnet программу и показывает её живой статус. |
@@ -376,6 +381,13 @@ npm run test:e2e:live             # на живом приложении silksol
    netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
    ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
    ```
+
+---
+
+### 📜 Лицензия и авторские права
+
+Copyright © 2026 **SilkSol AI / s0nakh**. Все права защищены.
+*Опубликовано для демонстрации и оценки на хакатоне Solana Colosseum Frontier.*
 
 ---
 
@@ -439,7 +451,7 @@ SilkSol AI — телеметрияға негізделген тәуекел т
 
 ### ⛓ Блокчейндегі эскроу бағдарламасы (Devnet)
 
-Параметрлік өзек Solana-да [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) Anchor бағдарламасы ретінде жұмыс істейді — бағдарлама ID [`Gu7gKXNn…AJr9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
+Параметрлік өзек Solana-да [`silksol_escrow`](./anchor/programs/silksol_escrow/src/lib.rs) Anchor бағдарламасы ретінде жұмыс істейді — бағдарлама ID [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet).
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
@@ -462,13 +474,13 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### 🧪 Тестілеу және E2E тексеру
 
-#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 1 қазан)
+#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 2 қазан)
 
 | Тексеру | Нәтиже |
 |---|---|
 | Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 өтті** |
-| Жергілікті құрастырмадағы E2E жиынтығы | **14 / 14 өтті** |
-| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **14 / 14 өтті** |
+| Жергілікті құрастырмадағы E2E жиынтығы | **15 / 15 өтті** |
+| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 өтті** |
 | Продакшн құрастырма және TypeScript типтерін тексеру | **Өтті** |
 | Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement) | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (алушыға +0.01 SOL) |
@@ -477,7 +489,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 #### E2E жиынтығы
 
-[Playwright](https://playwright.dev) жиынтығы (14 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
+[Playwright](https://playwright.dev) жиынтығы (15 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
 
 | Жиынтық | Не тексеріледі |
 |---|---|
@@ -485,7 +497,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 | **Web3 әмиян (демо-режим)** | Devnet-ке арналған Phantom / Solflare әмиян мәзірі және симуляцияланған қолтаңбаға дұрыс ауысу. |
 | **Жүк сүзгілері** | In Transit / High Risk Delay / Escrow Triggered сүзгілері қажетті жүктерді көрсетеді. |
 | **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 eKZT); сыйлықақы ЖИ тәуекел бағасы бойынша есептеледі. |
-| **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды. |
+| **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды және оны кестеде таңдалған жүк бойынша жүргізеді. |
 | **Caspian Risk Vault** | Demo USDC депозиті үлесті жаңартады; балансынан асатын сомалар қабылданбайды. |
 | **cNFT журналы** | Полистің әр оқиғасы сығылған Merkle бақылау нүктесі (жапырақ + түбір) ретінде жазылады. |
 | **Эскроу бағдарламасы** | Полис панелі Devnet-тегі бағдарламаға сілтеме береді және оның тірі мәртебесін көрсетеді. |
@@ -544,7 +556,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 
 ---
 
-### 📜 License & Copyright
+### 📜 Лицензия және авторлық құқық
 
-Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
-*Published for Solana Colosseum Frontier Hackathon demonstration and evaluation.*
+Copyright © 2026 **SilkSol AI / s0nakh**. Барлық құқықтар қорғалған.
+*Solana Colosseum Frontier хакатонында көрсету және бағалау үшін жарияланды.*
