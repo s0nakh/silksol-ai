@@ -47,7 +47,7 @@ import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/
 import { ekzt } from "@/components/solana/devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
 import { SIMULATED_DWELL_HOURS, TRIGGER_THRESHOLD_HOURS } from "@/components/solana/escrowProgram";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
@@ -387,9 +387,40 @@ function Dashboard() {
             </div>
           </div>
         </section>
-        <footer className="flex flex-col gap-2 px-1 pb-3 pt-7 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>© 2026 SilkSol AI · Infrastructure intelligence for the Middle Corridor</span><span className="flex items-center gap-1.5"><Box className="size-3" /> Block 371,924,881 · Finalized</span></footer>
+        <footer className="flex flex-col gap-2 px-1 pb-3 pt-7 text-[10px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between"><span>© 2026 SilkSol AI · Infrastructure intelligence for the Middle Corridor</span><LiveBlock /></footer>
       </div>
     </main>
+  );
+}
+
+// Latest finalized Devnet slot, polled so judges can see the page is talking to the real network.
+function LiveBlock() {
+  const { connection } = useConnection();
+  const [slot, setSlot] = useState<number | null>(null);
+  useEffect(() => {
+    let active = true;
+    const load = () =>
+      connection
+        .getSlot("finalized")
+        .then((s) => active && setSlot(s))
+        .catch(() => undefined);
+    load();
+    const id = window.setInterval(load, 5_000);
+    return () => {
+      active = false;
+      window.clearInterval(id);
+    };
+  }, [connection]);
+  return (
+    <a
+      href={slot === null ? "https://explorer.solana.com/?cluster=devnet" : `https://explorer.solana.com/block/${slot}?cluster=devnet`}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-1.5 hover:text-foreground"
+    >
+      <Box className="size-3" /> Devnet block {slot === null ? "…" : slot.toLocaleString("en-US")} · Finalized
+      {slot !== null && <DemoTag kind="DEVNET" />}
+    </a>
   );
 }
 

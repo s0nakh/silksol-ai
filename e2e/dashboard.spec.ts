@@ -28,6 +28,10 @@ test.describe("Dashboard & telemetry", () => {
       page.getByText(/Demo environment — balances, metrics, feeds and transactions are simulated/),
     ).toBeVisible();
     await expect(page.getByText("Solana Devnet", { exact: true })).toBeVisible();
+    // Footer shows the live finalized Devnet slot fetched from the RPC.
+    await expect(page.locator("footer")).toContainText(/Devnet block [\d,]{6,} · Finalized/, {
+      timeout: 45_000, // public Devnet RPC can rate-limit parallel test pages
+    });
 
     for (const [label, value] of [
       ["Active cargoes", "1,248"],
