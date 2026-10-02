@@ -16,9 +16,9 @@
 
 <p align="center">
   <a href="https://silksol.datariglab.kz/">🌐 Live dApp MVP</a> |
-  <a href="https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193">🎥 dApp Demo Video</a> |
-  <a href="https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09">🎤 Pitch Video</a> |
-  <a href="https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link">📊 Presentation (PDF)</a> |
+  <a href="https://www.loom.com/share/16e3dec8fe1f4a1488efa34fc906ea41">🎥 dApp Demo Video</a> |
+  <a href="https://www.loom.com/share/7a5fc765245d46a6aed6e34b6acee973">🎤 Pitch Video</a> |
+  <a href="https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing">📊 Presentation (PDF)</a> |
   <a href="./docs/ARCHITECTURE.md">📚 Documentation</a>
 </p>
 
@@ -159,7 +159,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **[Architecture Flow](./docs/ARCHITECTURE.md)** — end-to-end system design, data flow, and on-chain/off-chain boundaries.
 - **[Smart Contract Specs](./docs/CONTRACT_SPECS.md)** — Escrow Vault program accounts, instructions, and settlement trigger logic.
 - **[AIFC Sandbox Regulatory Notes](./docs/AIFC_SANDBOX.md)** — eKZT off-ramp compliance concept for the AIFC regulatory sandbox.
-- **[Presentation (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — pitch deck on Google Drive (a copy is kept in [`docs/`](./docs/SilkSol-AI-Presentation.pdf)).
+- **[Presentation (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — pitch deck on Google Drive.
 
 ---
 
@@ -218,7 +218,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 <p align="center"><em>Предиктивная аналитика рисков и протокол параметрических выплат для логистики Среднего коридора (ТМТМ) на Solana</em></p>
 
-[🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч-видео](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link) · [📚 Документация](./docs/ARCHITECTURE.md)
+[🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/16e3dec8fe1f4a1488efa34fc906ea41) · [🎤 Питч-видео](https://www.loom.com/share/7a5fc765245d46a6aed6e34b6acee973) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing) · [📚 Документация](./docs/ARCHITECTURE.md)
 
 ### 💡 Краткое описание
 
@@ -338,7 +338,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - **[Архитектура](./docs/ARCHITECTURE.md)** — устройство системы, потоки данных, граница между блокчейном и офчейном.
 - **[Спецификация смарт-контракта](./docs/CONTRACT_SPECS.md)** — аккаунты, инструкции и логика триггера эскроу-программы.
 - **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — концепция вывода в eKZT в регуляторной песочнице AIFC.
-- **[Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — питч-дек на Google Drive (копия лежит в [`docs/`](./docs/SilkSol-AI-Presentation.pdf)).
+- **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — питч-дек на Google Drive.
 
 ### ⚠️ Статус MVP и интеллектуальная собственность
 
@@ -383,7 +383,7 @@ npm run test:e2e:live             # на живом приложении silksol
 
 <p align="center"><em>Solana-дағы Орта дәліз (ТХКБ) логистикасына арналған болжамды тәуекел талдауы және параметрлік төлем хаттамасы</em></p>
 
-[🌐 Қосымша](https://silksol.datariglab.kz/) · [🎥 Демо-бейне](https://www.loom.com/share/4f232e4e56e34883a77f673716d6e193) · [🎤 Питч-бейне](https://www.loom.com/share/8e35c164203441d292f12f8d9302ac09) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link) · [📚 Құжаттама](./docs/ARCHITECTURE.md)
+[🌐 Қосымша](https://silksol.datariglab.kz/) · [🎥 Демо-бейне](https://www.loom.com/share/16e3dec8fe1f4a1488efa34fc906ea41) · [🎤 Питч-бейне](https://www.loom.com/share/7a5fc765245d46a6aed6e34b6acee973) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing) · [📚 Құжаттама](./docs/ARCHITECTURE.md)
 
 ### 💡 Қысқаша сипаттама
 
@@ -503,7 +503,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **[Архитектура](./docs/ARCHITECTURE.md)** — жүйе құрылымы, деректер ағыны, блокчейн мен офчейн арасындағы шекара.
 - **[Смарт-келісімшарт сипаттамасы](./docs/CONTRACT_SPECS.md)** — эскроу бағдарламасының аккаунттары, нұсқаулықтары және триггер логикасы.
 - **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC реттеушілік құмсалғышында eKZT арқылы шығу тұжырымдамасы.
-- **[Презентация (PDF)](https://drive.google.com/file/d/1F0uPeiNV-fzeBK_dpRXIE-UJmO1HyL3D/view?usp=drive_link)** — Google Drive-тағы питч-дек (көшірмесі [`docs/`](./docs/SilkSol-AI-Presentation.pdf) ішінде).
+- **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — Google Drive-тағы питч-дек.
 
 ### ⚠️ MVP мәртебесі және зияткерлік меншік
 
