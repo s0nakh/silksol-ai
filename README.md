@@ -122,7 +122,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 |---|---|
 | Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 passed** |
 | E2E suite against a local build | **17 / 17 passed** |
-| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 passed** |
+| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 passed** |
 | Production build & TypeScript type-check | **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Insurer payout to a user wallet with memo (Review settlement) | ✅ [payout tx](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL to the beneficiary) |
@@ -349,7 +349,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 |---|---|
 | Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 пройдено** |
 | E2E-набор на локальной сборке | **17 / 17 пройдено** |
-| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 пройдено** |
+| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 пройдено** |
 | Продакшн-сборка и проверка типов TypeScript | **Пройдено** |
 | Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Выплата страховщика на кошелёк пользователя с Memo (Review settlement) | ✅ [транзакция выплаты](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL получателю) |
@@ -558,7 +558,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 |---|---|
 | Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 өтті** |
 | Жергілікті құрастырмадағы E2E жиынтығы | **17 / 17 өтті** |
-| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 өтті** |
+| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 өтті** |
 | Продакшн құрастырма және TypeScript типтерін тексеру | **Өтті** |
 | Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement) | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (алушыға +0.01 SOL) |
