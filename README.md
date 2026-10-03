@@ -208,7 +208,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 - **MVP Data & Telemetry:** This public repository is an interactive hackathon MVP. All telemetry streams, risk metrics, and oracle events utilize synthetic/simulated data to demonstrate the automated workflow without requiring live hardware sensors.
 - **Deterministic Triggers:** AI/ML components represent predictive risk scoring logic; payout triggers are strictly deterministic rule-based smart contracts (`dwell_time > threshold`).
-- **IP Protection:** The production risk-scoring logic and future model parameters will remain confidential assets of DataRigLab / SilkSol AI. This public MVP uses a simplified rule-based scorer on simulated data (see [Roadmap](#-roadmap-from-devnet-mvp-to-production)).
+- **IP Protection:** The production risk-scoring logic and future model parameters will remain confidential assets of SilkSol AI. This public MVP uses a simplified rule-based scorer on simulated data (see [Roadmap](#-roadmap-from-devnet-mvp-to-production)).
 - **Regulatory Roadmap:** The eKZT / Digital Tenge integration represents a structural proposal for future testing within the AIFC regulatory sandbox environment.
 
 ---
@@ -256,7 +256,9 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 ## 📜 License & Copyright
 
 Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
-*Published for Solana Colosseum Frontier Hackathon demonstration and evaluation.*
+*Published for demonstration and evaluation at:*
+- *Colosseum Crypto World's Fair Hackathon*
+- *Colosseum Crypto World's Fair Hackathon | Superteam Kazakhstan Track*
 
 ---
 
@@ -427,7 +429,7 @@ npm run test:e2e:live             # на живом приложении silksol
 
 - **Данные и телеметрия MVP:** этот публичный репозиторий — интерактивный MVP для хакатона. Вся телеметрия, метрики рисков и события оракула основаны на синтетических/симулированных данных, чтобы показать автоматический процесс без реальных датчиков.
 - **Детерминированные триггеры:** ИИ/ML отвечает за предиктивную оценку риска; решение о выплате принимает смарт-контракт по строгому правилу (`dwell_time > threshold`).
-- **Защита ИС:** логика скоринга риска для продакшена и параметры будущих моделей останутся конфиденциальными активами DataRigLab / SilkSol AI. В этом публичном MVP используется упрощённый скоринг по правилам на симулированных данных (см. дорожную карту выше).
+- **Защита ИС:** логика скоринга риска для продакшена и параметры будущих моделей останутся конфиденциальными активами SilkSol AI. В этом публичном MVP используется упрощённый скоринг по правилам на симулированных данных (см. дорожную карту выше).
 - **Регуляторная дорожная карта:** интеграция eKZT / цифрового тенге — структурное предложение для будущего тестирования в регуляторной песочнице AIFC.
 
 ### 🚀 Локальный запуск
@@ -465,7 +467,9 @@ npm run test:e2e:live             # на живом приложении silksol
 ### 📜 Лицензия и авторские права
 
 Copyright © 2026 **SilkSol AI / s0nakh**. Все права защищены.
-*Опубликовано для демонстрации и оценки на хакатоне Solana Colosseum Frontier.*
+*Опубликовано для демонстрации и оценки на хакатонах:*
+- *Colosseum Crypto World's Fair Hackathon*
+- *Colosseum Crypto World's Fair Hackathon | Superteam Kazakhstan Track*
 
 ---
 
@@ -636,7 +640,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 
 - **MVP деректері мен телеметриясы:** бұл ашық репозиторий — хакатонға арналған интерактивті MVP. Барлық телеметрия, тәуекел көрсеткіштері мен оракул оқиғалары нақты датчиктерсіз автоматты процесті көрсету үшін синтетикалық/симуляцияланған деректерге негізделген.
 - **Детерминирленген триггерлер:** ЖИ/ML болжамды тәуекел бағасына жауап береді; төлем туралы шешімді смарт-келісімшарт қатаң ереже бойынша қабылдайды (`dwell_time > threshold`).
-- **ЗМ қорғау:** өндірістік тәуекел скорингінің логикасы мен болашақ модельдердің параметрлері DataRigLab / SilkSol AI-дың құпия активтері болып қалады. Бұл ашық MVP симуляцияланған деректер бойынша ережеге негізделген жеңілдетілген скорингті қолданады (жоғарыдағы жол картасын қараңыз).
+- **ЗМ қорғау:** өндірістік тәуекел скорингінің логикасы мен болашақ модельдердің параметрлері SilkSol AI-дың құпия активтері болып қалады. Бұл ашық MVP симуляцияланған деректер бойынша ережеге негізделген жеңілдетілген скорингті қолданады (жоғарыдағы жол картасын қараңыз).
 - **Реттеушілік жол картасы:** eKZT / цифрлық теңге интеграциясы — AIFC реттеушілік құмсалғышында болашақта сынауға арналған құрылымдық ұсыныс.
 
 ### 🚀 Жергілікті іске қосу
@@ -674,4 +678,6 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 ### 📜 Лицензия және авторлық құқық
 
 Copyright © 2026 **SilkSol AI / s0nakh**. Барлық құқықтар қорғалған.
-*Solana Colosseum Frontier хакатонында көрсету және бағалау үшін жарияланды.*
+*Келесі хакатондарда көрсету және бағалау үшін жарияланды:*
+- *Colosseum Crypto World's Fair Hackathon*
+- *Colosseum Crypto World's Fair Hackathon | Superteam Kazakhstan Track*
