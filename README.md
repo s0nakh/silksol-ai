@@ -163,11 +163,28 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 ---
 
+## 🗺 Roadmap: from Devnet MVP to production
+
+| | Today (Devnet MVP) | Next | Production |
+|---|---|---|---|
+| **Escrow** | ✅ Anchor program live on Devnet, 11 program tests | Security review and audit | Mainnet deployment |
+| **Payout currency** | ✅ Devnet SOL as a USDC stand-in | SPL USDC escrow vaults | USDC + eKZT dual settlement (AIFC Sandbox) |
+| **Oracle** | ✅ Single insurer signer (serverless function) | Port and rail telemetry feeds (Aktau, Baku) | Multi-signer / decentralized oracle network |
+| **Audit trail** | 🟡 cNFT logs simulated | Real State Compression (Bubblegum) | Every cargo event logged as a cNFT |
+| **Risk engine** | 🟡 Rule-based scoring on simulated telemetry | Historical dwell-time data from operator partners | Trained model prices premiums live |
+| **Regulatory** | 📄 AIFC Sandbox concept | AIFC Sandbox application | Licensed insurer partner |
+
+✅ live · 🟡 simulated · 📄 planned
+
+**Risk model plan.** There is no trained model yet: no public dataset of Trans-Caspian dwell times exists. Training starts once operator partners share 12–24 months of historical port and rail events (arrival/departure times, queue length, weather, season, cargo type). For this kind of tabular data the baseline is gradient-boosted trees (e.g. LightGBM or XGBoost), validated on time-based splits so the model is always tested on future shipments. The final choice depends on the data. The model only prices premiums; payouts stay a deterministic on-chain rule (`dwell_time > threshold`).
+
+---
+
 ## ⚠️ MVP Status & Intellectual Property Notice
 
 - **MVP Data & Telemetry:** This public repository is an interactive hackathon MVP. All telemetry streams, risk metrics, and oracle events utilize synthetic/simulated data to demonstrate the automated workflow without requiring live hardware sensors.
 - **Deterministic Triggers:** AI/ML components represent predictive risk scoring logic; payout triggers are strictly deterministic rule-based smart contracts (`dwell_time > threshold`).
-- **IP Protection:** Proprietary risk-scoring algorithms, dataset parameters, and model weights remain confidential assets of DataRigLab / SilkSol AI and operate behind private infrastructure.
+- **IP Protection:** The production risk-scoring logic and future model parameters will remain confidential assets of DataRigLab / SilkSol AI. This public MVP uses a simplified rule-based scorer on simulated data (see [Roadmap](#-roadmap-from-devnet-mvp-to-production)).
 - **Regulatory Roadmap:** The eKZT / Digital Tenge integration represents a structural proposal for future testing within the AIFC regulatory sandbox environment.
 
 ---
@@ -345,11 +362,26 @@ npm run test:e2e:live             # на живом приложении silksol
 - **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — концепция вывода в eKZT в регуляторной песочнице AIFC.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — питч-дек на Google Drive.
 
+### 🗺 Дорожная карта: от MVP в Devnet к продакшену
+
+| | Сейчас (MVP в Devnet) | Дальше | Продакшен |
+|---|---|---|---|
+| **Эскроу** | ✅ Anchor-программа работает в Devnet, 11 тестов программы | Ревью безопасности и аудит | Развёртывание в Mainnet |
+| **Валюта выплат** | ✅ Devnet SOL вместо USDC | Эскроу-хранилища в SPL USDC | Двойные расчёты USDC + eKZT (песочница AIFC) |
+| **Оракул** | ✅ Один подписант-страховщик (серверная функция) | Телеметрия портов и железной дороги (Актау, Баку) | Несколько подписантов / децентрализованная сеть оракулов |
+| **Журнал аудита** | 🟡 Журнал cNFT симулируется | Настоящий State Compression (Bubblegum) | Каждое событие груза записывается как cNFT |
+| **Оценка риска** | 🟡 Скоринг по правилам на симулированной телеметрии | Исторические данные о простоях от операторов-партнёров | Обученная модель рассчитывает премии в реальном времени |
+| **Регулирование** | 📄 Концепция песочницы AIFC | Заявка в песочницу AIFC | Партнёр — лицензированный страховщик |
+
+✅ работает · 🟡 симуляция · 📄 в планах
+
+**План модели риска.** Обученной модели пока нет: открытого набора данных о простоях на Транскаспийском маршруте не существует. Обучение начнётся, когда операторы-партнёры предоставят 12–24 месяца истории событий в портах и на железной дороге (время прибытия и отправления, длина очереди, погода, сезон, тип груза). Для таких табличных данных базовый подход — градиентный бустинг деревьев (например, LightGBM или XGBoost) с проверкой на временных срезах, чтобы модель всегда тестировалась на будущих отправках. Окончательный выбор зависит от данных. Модель только рассчитывает премии; выплаты остаются детерминированным правилом в блокчейне (`dwell_time > threshold`).
+
 ### ⚠️ Статус MVP и интеллектуальная собственность
 
 - **Данные и телеметрия MVP:** этот публичный репозиторий — интерактивный MVP для хакатона. Вся телеметрия, метрики рисков и события оракула основаны на синтетических/симулированных данных, чтобы показать автоматический процесс без реальных датчиков.
 - **Детерминированные триггеры:** ИИ/ML отвечает за предиктивную оценку риска; решение о выплате принимает смарт-контракт по строгому правилу (`dwell_time > threshold`).
-- **Защита ИС:** собственные алгоритмы скоринга, параметры датасетов и веса моделей остаются конфиденциальными активами DataRigLab / SilkSol AI и работают в закрытой инфраструктуре.
+- **Защита ИС:** логика скоринга риска для продакшена и параметры будущих моделей останутся конфиденциальными активами DataRigLab / SilkSol AI. В этом публичном MVP используется упрощённый скоринг по правилам на симулированных данных (см. дорожную карту выше).
 - **Регуляторная дорожная карта:** интеграция eKZT / цифрового тенге — структурное предложение для будущего тестирования в регуляторной песочнице AIFC.
 
 ### 🚀 Локальный запуск
@@ -517,11 +549,26 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC реттеушілік құмсалғышында eKZT арқылы шығу тұжырымдамасы.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — Google Drive-тағы питч-дек.
 
+### 🗺 Жол картасы: Devnet MVP-ден өндіріске дейін
+
+| | Қазір (Devnet MVP) | Келесі қадам | Өндіріс |
+|---|---|---|---|
+| **Эскроу** | ✅ Anchor бағдарламасы Devnet-те жұмыс істейді, бағдарламаның 11 тесті | Қауіпсіздік шолуы және аудит | Mainnet-ке орналастыру |
+| **Төлем валютасы** | ✅ USDC орнына Devnet SOL | SPL USDC эскроу қоймалары | USDC + eKZT қос есеп айырысу (AIFC құмсалғышы) |
+| **Оракул** | ✅ Бір сақтандырушы-қол қоюшы (серверлік функция) | Порт пен теміржол телеметриясы (Ақтау, Баку) | Бірнеше қол қоюшы / орталықсыздандырылған оракул желісі |
+| **Аудит журналы** | 🟡 cNFT журналы симуляция | Нақты State Compression (Bubblegum) | Жүктің әр оқиғасы cNFT ретінде жазылады |
+| **Тәуекелді бағалау** | 🟡 Симуляцияланған телеметрия бойынша ережеге негізделген скоринг | Серіктес операторлардан тұрып қалу уақытының тарихи деректері | Оқытылған модель сыйлықақыны нақты уақытта есептейді |
+| **Реттеу** | 📄 AIFC құмсалғышы тұжырымдамасы | AIFC құмсалғышына өтінім | Серіктес — лицензиясы бар сақтандырушы |
+
+✅ жұмыс істейді · 🟡 симуляция · 📄 жоспарда
+
+**Тәуекел моделінің жоспары.** Оқытылған модель әзірге жоқ: Транскаспий бағыты бойынша тұрып қалу уақытының ашық деректер жиыны жоқ. Оқыту серіктес операторлар порттар мен теміржолдағы оқиғалардың 12–24 айлық тарихын (келу және кету уақыты, кезек ұзындығы, ауа райы, маусым, жүк түрі) бергенде басталады. Мұндай кестелік деректер үшін базалық тәсіл — шешім ағаштарының градиенттік бустингі (мысалы, LightGBM немесе XGBoost), модель әрқашан болашақ жөнелтімдерде тексерілуі үшін уақыт бойынша бөліп тексеріледі. Соңғы таңдау деректерге байланысты. Модель тек сыйлықақыны есептейді; төлемдер блокчейндегі детерминирленген ереже болып қалады (`dwell_time > threshold`).
+
 ### ⚠️ MVP мәртебесі және зияткерлік меншік
 
 - **MVP деректері мен телеметриясы:** бұл ашық репозиторий — хакатонға арналған интерактивті MVP. Барлық телеметрия, тәуекел көрсеткіштері мен оракул оқиғалары нақты датчиктерсіз автоматты процесті көрсету үшін синтетикалық/симуляцияланған деректерге негізделген.
 - **Детерминирленген триггерлер:** ЖИ/ML болжамды тәуекел бағасына жауап береді; төлем туралы шешімді смарт-келісімшарт қатаң ереже бойынша қабылдайды (`dwell_time > threshold`).
-- **ЗМ қорғау:** меншікті скоринг алгоритмдері, деректер жиынының параметрлері және модель салмақтары DataRigLab / SilkSol AI-дың құпия активтері болып қалады және жабық инфрақұрылымда жұмыс істейді.
+- **ЗМ қорғау:** өндірістік тәуекел скорингінің логикасы мен болашақ модельдердің параметрлері DataRigLab / SilkSol AI-дың құпия активтері болып қалады. Бұл ашық MVP симуляцияланған деректер бойынша ережеге негізделген жеңілдетілген скорингті қолданады (жоғарыдағы жол картасын қараңыз).
 - **Реттеушілік жол картасы:** eKZT / цифрлық теңге интеграциясы — AIFC реттеушілік құмсалғышында болашақта сынауға арналған құрылымдық ұсыныс.
 
 ### 🚀 Жергілікті іске қосу
