@@ -24,7 +24,8 @@ export default async (req: Request) => {
 
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return reply(405, { ok: false, reason: "invalid_input", message: "POST only" });
-  if (origin && !allowed(origin)) {
+  // Browsers always send Origin on a cross-site POST; scripts that omit it are turned away.
+  if (!allowed(origin)) {
     return reply(403, { ok: false, reason: "invalid_input", message: "Origin not allowed" });
   }
 

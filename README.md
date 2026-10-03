@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
-  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-15%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
+  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-17%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
   <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-11%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
@@ -41,8 +41,8 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 1. Install [Phantom](https://phantom.com) → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
 2. Get free Devnet SOL at [faucet.solana.com](https://faucet.solana.com) (only needed for step 5; the payout in step 4 costs you nothing).
 3. Open the [live dApp](https://silksol.datariglab.kz/) → **Connect wallet → Phantom**.
-4. Scroll to **Autonomous settlement → Review settlement**. No signature is needed: the SilkSol AI insurer runs the claim on-chain and **+0.01 Devnet SOL arrives in your wallet** within seconds. Click the `tx:` link to see it in Solana Explorer, including the memo `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`.
-5. Full lifecycle in the **Parametric policy & claim engine** panel: **Issue Parametric Policy** (you sign a 0.001 SOL premium) → **Lock Collateral & Sign** (insurer locks 0.01 SOL in an escrow vault for you) → **Trigger Oracle Event** (oracle reports a 96 h delay, the program pays you).
+4. Scroll to **Autonomous settlement → Review settlement**. No signature is needed: the SilkSol AI insurer runs the claim on-chain and **+0.01 Devnet SOL arrives in your wallet** within seconds. Click the `tx:` link to see it in Solana Explorer, including the memo `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`. Now select **#TRK-7782** (dwell 18 h) and click **Review settlement** again: the escrow program **refuses** the claim (`NotEligible`), and nothing is paid.
+5. Full lifecycle in the **Parametric policy & claim engine** panel: **Issue Parametric Policy** (you sign a 0.001 SOL premium) → **Lock Collateral & Sign** (insurer locks 0.01 SOL in an escrow vault for you) → **Trigger Oracle Event** (the oracle reports that cargo's dwell time; the program pays only if it is over 72 h).
 
 > Without a wallet everything still works in demo mode with clearly labelled simulated transactions.
 
@@ -116,12 +116,12 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ## 🧪 Testing & E2E Validation
 
-### ✅ Verification status — all green (Oct 2, 2026)
+### ✅ Verification status — all green (Oct 3, 2026)
 
 | Check | Result |
 |---|---|
 | Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 passed** |
-| E2E suite against a local build | **15 / 15 passed** |
+| E2E suite against a local build | **17 / 17 passed** |
 | E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 passed** |
 | Production build & TypeScript type-check | **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
@@ -131,15 +131,15 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### E2E suite
 
-A [Playwright](https://playwright.dev) suite (15 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
+A [Playwright](https://playwright.dev) suite (17 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
 
 | Suite | Coverage |
 |---|---|
-| **Dashboard & Telemetry** | Demo disclaimer, KPI metrics, Middle Corridor route stops, Aktau congestion alert, IoT dwell time breaching the 18h threshold. |
+| **Dashboard & Telemetry** | Demo disclaimer, KPI metrics, Middle Corridor route stops, Aktau congestion alert, the selected cargo's oracle dwell time against the 72 h trigger. |
 | **Web3 Wallet (demo mode)** | Phantom / Solflare Devnet wallet menu and graceful fallback to simulated signatures. |
 | **Cargo Filters** | In Transit / High Risk Delay / Escrow Triggered filters isolate the right shipments. |
-| **Parametric Policy Lifecycle** | Issue → Lock Collateral & Sign → Trigger Oracle Event → Claim Paid Out (2,500 Demo USDC ≈ 1,250,000 eKZT); premium priced from the AI risk score. |
-| **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout and settles the cargo selected in the table, not a fixed one. |
+| **Parametric Policy Lifecycle** | Issue → Lock Collateral & Sign → Trigger Oracle Event → Claim Paid Out (2,500 Demo USDC ≈ 1,250,000 eKZT); the trigger is refused for a cargo under 72 h; premium priced from the AI risk score. |
+| **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout and settles the cargo selected in the table, not a fixed one; a cargo under the threshold gets no payout. |
 | **Caspian Risk Vault** | Demo USDC deposit updates stake; amounts above the wallet balance are rejected. |
 | **cNFT Audit Trail** | Each policy event is logged as a compressed Merkle checkpoint (leaf + root). |
 | **On-chain Escrow Program** | Policy panel links to the deployed Devnet program and shows its live status. |
@@ -160,6 +160,30 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **[Smart Contract Specs](./docs/CONTRACT_SPECS.md)** — Escrow Vault program accounts, instructions, and settlement trigger logic.
 - **[AIFC Sandbox Regulatory Notes](./docs/AIFC_SANDBOX.md)** — eKZT off-ramp compliance concept for the AIFC regulatory sandbox.
 - **[Presentation (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — pitch deck on Google Drive.
+
+---
+
+## 📊 Market, sources & positioning
+
+**Market data sources.** The corridor figures in the pitch deck (and the TAM / SAM / SOM sizing built on them) come from public sources:
+
+- **World Bank**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (Sept 28, 2026): investments could more than triple corridor volumes and halve travel times by 2040; port and border delays are the main bottleneck. [Press release](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
+- **Argus** freight assessment (Sept 2026): Xi'an → Tbilisi/Poti **$6,900–7,200 per 40HC**, Xi'an → Alat/Baku $6,750–7,200 per 40HC. [Trend.az summary](https://www.trend.az/casia/kazakhstan/4229949.html)
+- **TITR / Ministry of Transport of Kazakhstan**: Middle Corridor volumes grew from 0.8 to **~4.5 million tonnes a year**. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+
+**Global Web3 benchmarks.** Parametric cover on-chain is proven in other verticals: **Etherisc** (flight-delay and crop insurance), **Arbol** (parametric weather cover), **Nayms** (regulated on-chain insurance marketplace). SilkSol AI applies the same model to a corridor nobody covers: Caspian port dwell times (Aktau, Kuryk, Baku), with AIFC / eKZT settlement built in.
+
+**Business model & risk capital.**
+- **Who pays:** freight forwarders and shippers pay a premium per cargo, priced by the risk score.
+- **Who carries the risk:** in production, a licensed insurer partner funds the escrow vaults (target: AIFC regulatory sandbox). SilkSol AI is the technology layer: risk pricing, oracle and on-chain settlement.
+- **Caspian Risk Vault:** the liquidity vault in the dApp (TVL, APY) is a simulated later-phase concept, intended only for qualified investors under AIFC rules.
+
+**Known limitations of the MVP.**
+- The insurer and the oracle are one signer (a serverless function). A multi-signer oracle is on the roadmap.
+- The vault has no `coverage_end` yet, so the insurer could close an untriggered vault before the cover period ends. Planned: block `close_vault` until coverage ends.
+- Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
+- Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
+- The demo insurer is rate-limited (per wallet, plus 10 payouts per hour and 40 per day in total) to keep the Devnet treasury alive.
 
 ---
 
@@ -253,8 +277,8 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 1. Установите [Phantom](https://phantom.com) → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
 2. Получите бесплатные Devnet SOL на [faucet.solana.com](https://faucet.solana.com) (нужны только для шага 5; выплата на шаге 4 вам ничего не стоит).
 3. Откройте [приложение](https://silksol.datariglab.kz/) → **Connect wallet → Phantom**.
-4. Прокрутите до блока **Autonomous settlement** и нажмите **Review settlement**. Подписывать ничего не нужно: страховщик SilkSol AI проводит страховой случай в блокчейне, и через несколько секунд **на ваш кошелёк приходит +0.01 Devnet SOL**. По ссылке `tx:` откроется транзакция в Solana Explorer вместе с пометкой (Memo) `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`.
-5. Полный цикл — в панели **Parametric policy & claim engine**: **Issue Parametric Policy** (вы подписываете премию 0.001 SOL) → **Lock Collateral & Sign** (страховщик блокирует для вас 0.01 SOL в эскроу-хранилище) → **Trigger Oracle Event** (оракул сообщает о задержке 96 ч, программа выплачивает вам).
+4. Прокрутите до блока **Autonomous settlement** и нажмите **Review settlement**. Подписывать ничего не нужно: страховщик SilkSol AI проводит страховой случай в блокчейне, и через несколько секунд **на ваш кошелёк приходит +0.01 Devnet SOL**. По ссылке `tx:` откроется транзакция в Solana Explorer вместе с пометкой (Memo) `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`. Теперь выберите груз **#TRK-7782** (простой 18 ч) и снова нажмите **Review settlement**: эскроу-программа **отказывает** в выплате (`NotEligible`), деньги не уходят.
+5. Полный цикл — в панели **Parametric policy & claim engine**: **Issue Parametric Policy** (вы подписываете премию 0.001 SOL) → **Lock Collateral & Sign** (страховщик блокирует для вас 0.01 SOL в эскроу-хранилище) → **Trigger Oracle Event** (оракул сообщает простой этого груза; программа платит, только если он больше 72 ч).
 
 > Без кошелька всё тоже работает — в демо-режиме, с явно помеченными симулированными транзакциями.
 
@@ -319,12 +343,12 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### 🧪 Тестирование и E2E-проверка
 
-#### ✅ Статус проверки — всё зелёное (2 октября 2026)
+#### ✅ Статус проверки — всё зелёное (3 октября 2026)
 
 | Проверка | Результат |
 |---|---|
 | Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 пройдено** |
-| E2E-набор на локальной сборке | **15 / 15 пройдено** |
+| E2E-набор на локальной сборке | **17 / 17 пройдено** |
 | E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 пройдено** |
 | Продакшн-сборка и проверка типов TypeScript | **Пройдено** |
 | Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
@@ -334,15 +358,15 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 #### E2E-набор
 
-Набор [Playwright](https://playwright.dev) (15 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
+Набор [Playwright](https://playwright.dev) (17 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
 
 | Набор | Что проверяется |
 |---|---|
-| **Дашборд и телеметрия** | Демо-предупреждение, KPI, точки маршрута Среднего коридора, оповещение о заторе в Актау, превышение порога простоя 18 ч по IoT. |
+| **Дашборд и телеметрия** | Демо-предупреждение, KPI, точки маршрута Среднего коридора, оповещение о заторе в Актау, простой выбранного груза по данным оракула против триггера 72 ч. |
 | **Web3-кошелёк (демо-режим)** | Меню кошельков Phantom / Solflare для Devnet и корректный переход к симулированным подписям. |
 | **Фильтры грузов** | Фильтры In Transit / High Risk Delay / Escrow Triggered показывают нужные грузы. |
-| **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 eKZT); премия рассчитывается по ИИ-оценке риска. |
-| **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC и проводит её именно по грузу, выбранному в таблице. |
+| **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 eKZT); отказ триггера для груза с простоем меньше 72 ч; премия рассчитывается по ИИ-оценке риска. |
+| **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC и проводит её именно по грузу, выбранному в таблице; груз ниже порога выплату не получает. |
 | **Caspian Risk Vault** | Депозит Demo USDC обновляет долю; суммы больше баланса отклоняются. |
 | **Журнал cNFT** | Каждое событие полиса записывается как сжатая контрольная точка Merkle (лист + корень). |
 | **Эскроу-программа** | Панель полиса ссылается на развёрнутую в Devnet программу и показывает её живой статус. |
@@ -361,6 +385,28 @@ npm run test:e2e:live             # на живом приложении silksol
 - **[Спецификация смарт-контракта](./docs/CONTRACT_SPECS.md)** — аккаунты, инструкции и логика триггера эскроу-программы.
 - **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — концепция вывода в eKZT в регуляторной песочнице AIFC.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — питч-дек на Google Drive.
+
+### 📊 Рынок, источники и позиционирование
+
+**Источники рыночных данных.** Цифры по коридору в презентации (и оценка TAM / SAM / SOM на их основе) взяты из открытых источников:
+
+- **Всемирный банк**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (28 сентября 2026): инвестиции могут более чем утроить объёмы коридора и вдвое сократить время в пути к 2040 году; главное узкое место — задержки в портах и на границах. [Пресс-релиз](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
+- Ценовое агентство **Argus** (сентябрь 2026): Сиань → Тбилиси/Поти **$6 900–7 200 за 40HC**, Сиань → Алят/Баку $6 750–7 200 за 40HC. [Обзор Trend.az](https://www.trend.az/casia/kazakhstan/4229949.html)
+- **ТМТМ / Министерство транспорта РК**: объём перевозок по Среднему коридору вырос с 0,8 до **~4,5 млн тонн в год**. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+
+**Глобальные Web3-бенчмарки.** Параметрическое страхование в блокчейне уже работает в других отраслях: **Etherisc** (задержки авиарейсов и агрориски), **Arbol** (погодные параметрические покрытия), **Nayms** (регулируемый on-chain рынок страхования). SilkSol AI применяет ту же модель к коридору, который никто не покрывает: простои в каспийских портах (Актау, Курык, Баку), с расчётами через МФЦА / eKZT.
+
+**Бизнес-модель и страховой капитал.**
+- **Кто платит:** экспедиторы и грузоотправители платят премию за каждый груз, её размер зависит от оценки риска.
+- **Кто несёт риск:** в продакшене эскроу-хранилища финансирует лицензированный страховщик-партнёр (цель — регуляторная песочница МФЦА). SilkSol AI — технологический слой: оценка риска, оракул и выплаты в блокчейне.
+- **Caspian Risk Vault:** хранилище ликвидности в dApp (TVL, APY) — симуляция концепции следующей фазы, только для квалифицированных инвесторов по правилам МФЦА.
+
+**Известные ограничения MVP.**
+- Страховщик и оракул — один подписант (серверная функция). Оракул с несколькими подписантами есть в дорожной карте.
+- В хранилище пока нет `coverage_end`, поэтому страховщик может закрыть несработавшее хранилище до конца срока покрытия. План: запретить `close_vault` до окончания покрытия.
+- Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
+- Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
+- У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 выплат в час и 40 в день), чтобы казна в Devnet не опустела.
 
 ### 🗺 Дорожная карта: от MVP в Devnet к продакшену
 
@@ -440,8 +486,8 @@ SilkSol AI — телеметрияға негізделген тәуекел т
 1. [Phantom](https://phantom.com) әмиянын орнатыңыз → **Settings → Developer Settings → Testnet Mode → Solana Devnet**.
 2. [faucet.solana.com](https://faucet.solana.com) сайтынан тегін Devnet SOL алыңыз (тек 5-қадамға керек; 4-қадамдағы төлем сізге ештеңе тұрмайды).
 3. [Қосымшаны](https://silksol.datariglab.kz/) ашыңыз → **Connect wallet → Phantom**.
-4. **Autonomous settlement** блогына дейін төмен түсіп, **Review settlement** батырмасын басыңыз. Ешнәрсеге қол қоюдың қажеті жоқ: SilkSol AI сақтандырушысы сақтандыру жағдайын блокчейнде жүргізеді, бірнеше секундтан кейін **әмияныңызға +0.01 Devnet SOL түседі**. `tx:` сілтемесі транзакцияны Solana Explorer-де Memo белгісімен бірге ашады: `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`.
-5. Толық цикл — **Parametric policy & claim engine** панелінде: **Issue Parametric Policy** (0.001 SOL сыйлықақыға қол қоясыз) → **Lock Collateral & Sign** (сақтандырушы сіз үшін эскроу қоймасында 0.01 SOL бұғаттайды) → **Trigger Oracle Event** (оракул 96 сағаттық кешігу туралы хабарлайды, бағдарлама сізге төлейді).
+4. **Autonomous settlement** блогына дейін төмен түсіп, **Review settlement** батырмасын басыңыз. Ешнәрсеге қол қоюдың қажеті жоқ: SilkSol AI сақтандырушысы сақтандыру жағдайын блокчейнде жүргізеді, бірнеше секундтан кейін **әмияныңызға +0.01 Devnet SOL түседі**. `tx:` сілтемесі транзакцияны Solana Explorer-де Memo белгісімен бірге ашады: `SilkSol AI | Parametric payout | Cargo #JOL-8921 | Delay 96h > 72h | …`. Енді **#TRK-7782** жүгін (тұрып қалу 18 сағат) таңдап, **Review settlement** батырмасын қайта басыңыз: эскроу бағдарламасы төлемнен **бас тартады** (`NotEligible`), ақша жіберілмейді.
+5. Толық цикл — **Parametric policy & claim engine** панелінде: **Issue Parametric Policy** (0.001 SOL сыйлықақыға қол қоясыз) → **Lock Collateral & Sign** (сақтандырушы сіз үшін эскроу қоймасында 0.01 SOL бұғаттайды) → **Trigger Oracle Event** (оракул осы жүктің тұрып қалу уақытын хабарлайды; бағдарлама ол 72 сағаттан асса ғана төлейді).
 
 > Әмиянсыз да бәрі жұмыс істейді — демо-режимде, симуляция екені анық белгіленген транзакциялармен.
 
@@ -506,12 +552,12 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 ### 🧪 Тестілеу және E2E тексеру
 
-#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 2 қазан)
+#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 3 қазан)
 
 | Тексеру | Нәтиже |
 |---|---|
 | Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 өтті** |
-| Жергілікті құрастырмадағы E2E жиынтығы | **15 / 15 өтті** |
+| Жергілікті құрастырмадағы E2E жиынтығы | **17 / 17 өтті** |
 | Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **15 / 15 өтті** |
 | Продакшн құрастырма және TypeScript типтерін тексеру | **Өтті** |
 | Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
@@ -521,15 +567,15 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 #### E2E жиынтығы
 
-[Playwright](https://playwright.dev) жиынтығы (15 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
+[Playwright](https://playwright.dev) жиынтығы (17 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
 
 | Жиынтық | Не тексеріледі |
 |---|---|
-| **Дашборд және телеметрия** | Демо-ескерту, KPI, Орта дәліз бағытының нүктелері, Ақтаудағы кептеліс туралы хабарлама, IoT бойынша 18 сағаттық тоқтап тұру шегінен асу. |
+| **Дашборд және телеметрия** | Демо-ескерту, KPI, Орта дәліз бағытының нүктелері, Ақтаудағы кептеліс туралы хабарлама, таңдалған жүктің оракул деректері бойынша тұрып қалу уақыты мен 72 сағаттық триггер. |
 | **Web3 әмиян (демо-режим)** | Devnet-ке арналған Phantom / Solflare әмиян мәзірі және симуляцияланған қолтаңбаға дұрыс ауысу. |
 | **Жүк сүзгілері** | In Transit / High Risk Delay / Escrow Triggered сүзгілері қажетті жүктерді көрсетеді. |
-| **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 eKZT); сыйлықақы ЖИ тәуекел бағасы бойынша есептеледі. |
-| **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды және оны кестеде таңдалған жүк бойынша жүргізеді. |
+| **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 eKZT); тұрып қалуы 72 сағаттан аз жүк үшін триггер бас тартады; сыйлықақы ЖИ тәуекел бағасы бойынша есептеледі. |
+| **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды және оны кестеде таңдалған жүк бойынша жүргізеді; шектен төмен жүк төлем алмайды. |
 | **Caspian Risk Vault** | Demo USDC депозиті үлесті жаңартады; балансынан асатын сомалар қабылданбайды. |
 | **cNFT журналы** | Полистің әр оқиғасы сығылған Merkle бақылау нүктесі (жапырақ + түбір) ретінде жазылады. |
 | **Эскроу бағдарламасы** | Полис панелі Devnet-тегі бағдарламаға сілтеме береді және оның тірі мәртебесін көрсетеді. |
@@ -548,6 +594,28 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **[Смарт-келісімшарт сипаттамасы](./docs/CONTRACT_SPECS.md)** — эскроу бағдарламасының аккаунттары, нұсқаулықтары және триггер логикасы.
 - **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC реттеушілік құмсалғышында eKZT арқылы шығу тұжырымдамасы.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — Google Drive-тағы питч-дек.
+
+### 📊 Нарық, дереккөздер және позициялау
+
+**Нарық деректерінің дереккөздері.** Презентациядағы дәліз көрсеткіштері (және солардың негізіндегі TAM / SAM / SOM бағасы) ашық дереккөздерден алынған:
+
+- **Дүниежүзілік банк**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (2026 жылғы 28 қыркүйек): инвестициялар 2040 жылға қарай дәліз көлемін үш еседен астам арттырып, жол уақытын екі есе қысқартуы мүмкін; басты кедергі — порттар мен шекаралардағы кідірістер. [Баспасөз релизі](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
+- **Argus** баға агенттігі (2026 жылғы қыркүйек): Сиань → Тбилиси/Поти **40HC үшін $6 900–7 200**, Сиань → Әлят/Баку 40HC үшін $6 750–7 200. [Trend.az шолуы](https://www.trend.az/casia/kazakhstan/4229949.html)
+- **ТХКБ / ҚР Көлік министрлігі**: Орта дәліз бойынша тасымал көлемі жылына 0,8-ден **~4,5 млн тоннаға** дейін өсті. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+
+**Жаһандық Web3 бенчмарктері.** Блокчейндегі параметрлік сақтандыру басқа салаларда жұмыс істеп тұр: **Etherisc** (рейс кешігуі және агротәуекелдер), **Arbol** (ауа райына байланысты параметрлік өтелім), **Nayms** (реттелетін on-chain сақтандыру нарығы). SilkSol AI осы модельді ешкім қамтымаған дәлізге қолданады: Каспий порттарындағы тұрып қалу (Ақтау, Құрық, Баку), есеп айырысу AIFC / eKZT арқылы.
+
+**Бизнес-модель және сақтандыру капиталы.**
+- **Кім төлейді:** экспедиторлар мен жүк жөнелтушілер әр жүк үшін сыйлықақы төлейді, оның мөлшері тәуекел бағасына байланысты.
+- **Тәуекелді кім көтереді:** өндірісте эскроу қоймаларын лицензиясы бар серіктес сақтандырушы қаржыландырады (мақсат — AIFC реттеушілік құмсалғышы). SilkSol AI — технологиялық қабат: тәуекелді бағалау, оракул және блокчейндегі төлемдер.
+- **Caspian Risk Vault:** dApp-тағы өтімділік қоймасы (TVL, APY) — келесі кезең тұжырымдамасының симуляциясы, тек AIFC ережелері бойынша білікті инвесторларға арналған.
+
+**MVP-дің белгілі шектеулері.**
+- Сақтандырушы мен оракул — бір қол қоюшы (серверлік функция). Бірнеше қол қоюшысы бар оракул жол картасында бар.
+- Қоймада әзірге `coverage_end` жоқ, сондықтан сақтандырушы іске қосылмаған қойманы өтелім мерзімі біткенге дейін жаба алады. Жоспар: өтелім аяқталғанға дейін `close_vault` тыйым салу.
+- Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
+- Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
+- Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 төлем), Devnet қазынасы таусылмауы үшін.
 
 ### 🗺 Жол картасы: Devnet MVP-ден өндіріске дейін
 

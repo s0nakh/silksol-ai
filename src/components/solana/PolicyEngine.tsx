@@ -1,7 +1,7 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { PREMIUM_SOL, ekzt, sendPremium } from "./devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
-import { DEMO_COLLATERAL_LAMPORTS, explorerAddress, lockCollateralOnChain, triggerAndSettleOnChain } from "./escrowProgram";
+import { DEMO_COLLATERAL_LAMPORTS, TRIGGER_THRESHOLD_HOURS, explorerAddress, lockCollateralOnChain, triggerAndSettleOnChain, triggerMet } from "./escrowProgram";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Check, FileSignature, Lock, Radar, ShieldCheck, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -20,11 +20,12 @@ export const premiumFor = (risk: number, coverage: number) => Math.round(coverag
 type Props = {
   cargoId: string;
   risk: number;
+  dwellHours: number;
   policy: Policy;
   onUpdate: (p: Policy, event: string) => void;
 };
 
-export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
+export function PolicyEngine({ cargoId, risk, dwellHours, policy, onUpdate }: Props) {
   const wallet = useWallet();
   const { connection } = useConnection();
   const { connected, signMessage } = wallet;
@@ -122,6 +123,10 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
     }
   };
 
+  const met = triggerMet(dwellHours);
+  const refuse = (detail: string) =>
+    toast.error(`Trigger not met · cargo #${cargoId} — no payout`, { description: detail, duration: 10000 });
+
   const trigger = async () => {
     if (policy.insurer && policy.policyId && wallet.publicKey) {
       setBusy(true);
@@ -137,6 +142,10 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
             policyId: policy.policyId,
           },
         });
+        if (!res.ok && res.reason === "trigger_not_met") {
+          refuse(res.message);
+          return;
+        }
         if (!res.ok) throw new Error(res.message);
         const ms = Math.round(performance.now() - start);
         onUpdate({ ...policy, stage: "paid", tx: res.signature, payoutMs: ms }, "Claim paid out to wallet (on-chain)");
@@ -154,12 +163,17 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
       }
       return;
     }
+    if (!met) {
+      // Same rule as the program's evaluate_trigger; don't ask the wallet to sign a payout that must fail.
+      refuse(`Oracle reports dwell ${dwellHours}h ≤ ${TRIGGER_THRESHOLD_HOURS}h threshold — the escrow contract refuses the payout (NotEligible).`);
+      return;
+    }
     if (policy.onChain && policy.vault && connected) {
       setBusy(true);
       const start = performance.now();
       const id = window.setInterval(() => setTimer(performance.now() - start), 50);
       try {
-        const sig = await triggerAndSettleOnChain(wallet, connection, policy.vault, risk);
+        const sig = await triggerAndSettleOnChain(wallet, connection, policy.vault, dwellHours, risk);
         const ms = Math.round(performance.now() - start);
         onUpdate({ ...policy, stage: "paid", tx: sig, payoutMs: ms }, "Claim paid out (on-chain)");
         toast.success(`Claim Paid Out on-chain · ${COLLATERAL_SOL} Devnet SOL`, {
@@ -221,7 +235,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
           <Cell label="Coverage" value={`${(policy.coverage || 2500).toLocaleString()}`} />
           <Cell label="Premium" value={`${premiumFor(risk, policy.coverage || 2500)}`} />
         </div>
-        <p className="-mt-2 text-[10px] text-muted-foreground">Amounts in Demo USDC · trigger: delay &gt; 72h</p>
+        <p className="-mt-2 text-[10px] text-muted-foreground">Amounts in Demo USDC · trigger: delay &gt; {TRIGGER_THRESHOLD_HOURS}h · oracle dwell: <span className={met ? "font-semibold text-warning" : "font-semibold text-success"}>{dwellHours}h</span></p>
         <div className="flex items-center gap-2">
           {steps.map((s, i) => (
             <div key={s.key} className="flex flex-1 items-center gap-2">
@@ -249,7 +263,7 @@ export function PolicyEngine({ cargoId, risk, policy, onUpdate }: Props) {
         )}
         {policy.stage === "locked" && (
           <Button className="w-full" variant="secondary" onClick={trigger} disabled={busy}>
-            {timer !== null ? <><Timer className="size-4 animate-spin" /> Settling… {(timer / 1000).toFixed(3)}s</> : <><Radar className="size-4" /> Trigger Oracle Event (Simulate Delay &gt;72h)</>}
+            {timer !== null ? <><Timer className="size-4 animate-spin" /> Settling… {(timer / 1000).toFixed(3)}s</> : <><Radar className="size-4" /> Trigger Oracle Event (dwell {dwellHours}h)</>}
           </Button>
         )}
         {policy.stage === "paid" && (

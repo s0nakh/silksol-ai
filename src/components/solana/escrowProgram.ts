@@ -16,7 +16,18 @@ export const ESCROW_PROGRAM_ID = new PublicKey("Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmri
 
 export const DEMO_COLLATERAL_LAMPORTS = Math.round(0.01 * LAMPORTS_PER_SOL);
 export const TRIGGER_THRESHOLD_HOURS = 72;
-export const SIMULATED_DWELL_HOURS = 96;
+
+// Simulated oracle telemetry: port dwell time per demo cargo. The insurer/oracle reads it on the
+// server (the browser never chooses the number), so the on-chain trigger depends on the cargo.
+export const SIMULATED_DWELL_HOURS: Record<string, number> = {
+  "JOL-8921": 96, // stuck at Aktau Port
+  "KZL-4107": 110, // held on the Caspian crossing
+  "MCC-2048": 6, // moving through Khorgos
+  "TRK-7782": 18, // routine handling at Baku Terminal
+};
+export const dwellHoursFor = (cargoId: string): number | undefined => SIMULATED_DWELL_HOURS[cargoId];
+/** Mirrors the program's rule in `evaluate_trigger`: pay only when dwell_hours > threshold_hours. */
+export const triggerMet = (dwellHours: number) => dwellHours > TRIGGER_THRESHOLD_HOURS;
 
 export const DISCRIMINATORS = {
   initialize_vault: [48, 191, 163, 44, 71, 129, 63, 164],
@@ -183,6 +194,7 @@ export async function triggerAndSettleOnChain(
   wallet: WalletLike,
   connection: Connection,
   vault: string,
+  dwellHours: number,
   riskScore: number,
 ) {
   if (!wallet.publicKey) throw new Error("Wallet not connected");
@@ -194,7 +206,7 @@ export async function triggerAndSettleOnChain(
     submitTelemetryIx(
       me,
       v,
-      SIMULATED_DWELL_HOURS,
+      dwellHours,
       Math.max(0, Math.min(100, Math.round(riskScore))),
     ),
     evaluateTriggerIx(v),

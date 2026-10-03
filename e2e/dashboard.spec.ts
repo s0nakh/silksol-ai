@@ -53,8 +53,9 @@ test.describe("Dashboard & telemetry", () => {
   test("shows IoT telemetry breaching the dwell-time threshold", async ({ page }) => {
     const iot = page.locator(".panel", { hasText: "Live IoT telemetry" });
     await expect(iot).toContainText("4.2°C");
-    await expect(iot).toContainText("21.6h");
-    await expect(iot).toContainText("+3.6h over");
+    // Default cargo #JOL-8921: the oracle reports 96 h at Aktau, over the 72 h trigger.
+    await expect(iot).toContainText("96h");
+    await expect(iot).toContainText("+24h over 72h");
     await expect(
       page.getByText(/delay of 96 h exceeded the insured 72-hour threshold/),
     ).toBeVisible();
@@ -108,11 +109,11 @@ test.describe("On-chain escrow program", () => {
 
 test.describe("Parametric policy lifecycle", () => {
   test("issue → lock collateral → oracle trigger → claim paid out", async ({ page }) => {
-    const row = cargoRow(page, "MCC-2048");
+    const row = cargoRow(page, "JOL-8921");
     await row.getByRole("button", { name: "Issue Parametric Policy" }).click();
 
     const engine = policyEngine(page);
-    await expect(engine.getByRole("heading", { name: "Cover · #MCC-2048" })).toBeVisible();
+    await expect(engine.getByRole("heading", { name: "Cover · #JOL-8921" })).toBeVisible();
     await expect(row).toContainText("issued");
 
     await engine.getByRole("button", { name: "Lock Collateral & Sign (Devnet)" }).click();
@@ -124,6 +125,20 @@ test.describe("Parametric policy lifecycle", () => {
     await expect(engine).toContainText("~1,250,000 eKZT via AIFC Gateway");
     await expect(engine).toContainText(/Settled in \d+ ms/);
     await expect(row).toContainText("Claim Paid Out (Demo USDC)");
+  });
+
+  test("oracle trigger is refused when dwell is within the threshold", async ({ page }) => {
+    const row = cargoRow(page, "MCC-2048");
+    await row.getByRole("button", { name: "Issue Parametric Policy" }).click();
+    const engine = policyEngine(page);
+    await engine.getByRole("button", { name: "Lock Collateral & Sign (Devnet)" }).click();
+    await expect(row).toContainText("locked");
+
+    await engine.getByRole("button", { name: "Trigger Oracle Event (dwell 6h)" }).click();
+    await expect(page.getByText("Trigger not met · cargo #MCC-2048 — no payout")).toBeVisible();
+    await expect(page.getByText(/dwell 6h ≤ 72h threshold/)).toBeVisible();
+    await expect(engine.getByText("Claim Paid Out")).toHaveCount(0);
+    await expect(row).toContainText("locked");
   });
 
   test("premium is priced from the AI risk score", async ({ page }) => {
@@ -167,6 +182,17 @@ test.describe("Autonomous settlement", () => {
 
     // Another cargo still has its own, unsettled claim.
     await cargoRow(page, "TRK-7782").click();
+    await expect(page.getByRole("button", { name: /Review settlement/ })).toBeEnabled();
+  });
+
+  test("refuses settlement for a cargo whose dwell is below the trigger", async ({ page }) => {
+    await cargoRow(page, "TRK-7782").click();
+    await expect(page.getByText("No payout owed")).toBeVisible();
+    await expect(page.getByText(/dwell of 18 h is within the insured 72-hour threshold/)).toBeVisible();
+    await page.getByRole("button", { name: /Review settlement/ }).click();
+
+    await expect(page.getByText("Trigger not met · cargo #TRK-7782 — no payout")).toBeVisible();
+    await expect(cargoRow(page, "TRK-7782")).not.toContainText("Claim Paid Out");
     await expect(page.getByRole("button", { name: /Review settlement/ })).toBeEnabled();
   });
 });

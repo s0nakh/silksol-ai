@@ -46,7 +46,7 @@ import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/Polic
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/DemoTag";
 import { ekzt } from "@/components/solana/devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
-import { SIMULATED_DWELL_HOURS, TRIGGER_THRESHOLD_HOURS } from "@/components/solana/escrowProgram";
+import { TRIGGER_THRESHOLD_HOURS, dwellHoursFor, triggerMet } from "@/components/solana/escrowProgram";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
@@ -147,14 +147,16 @@ function Dashboard() {
   const [staked, setStaked] = useState(0);
 
   const policyOf = (id: string) => policies[id] ?? emptyPolicy;
-  const updatePolicy = (id: string, p: Policy, event: string) => {
-    // A simulated claim can be re-settled on-chain later; credit the demo USDC only once.
-    if (p.stage === "paid" && policies[id]?.stage !== "paid") setWalletUsdc((w) => w + p.coverage);
-    setPolicies((prev) => ({ ...prev, [id]: p }));
+  const logEvent = (id: string, event: string) =>
     setLogs((prev) => [
       ...prev,
       { id: prev.length + 1, time: new Date().toLocaleTimeString(), event, cargo: id, leaf: mockTxHash().slice(0, 44), root: mockTxHash().slice(0, 44) },
     ]);
+  const updatePolicy = (id: string, p: Policy, event: string) => {
+    // A simulated claim can be re-settled on-chain later; credit the demo USDC only once.
+    if (p.stage === "paid" && policies[id]?.stage !== "paid") setWalletUsdc((w) => w + p.coverage);
+    setPolicies((prev) => ({ ...prev, [id]: p }));
+    logEvent(id, event);
   };
 
   // Policies and payouts belong to the connected wallet: on disconnect or account switch,
@@ -175,11 +177,21 @@ function Dashboard() {
   const settled = selectedPolicy.stage === "paid";
   const settleOnChain = settled && !!selectedPolicy.onChain;
   const settleSig = settleOnChain ? selectedPolicy.tx : undefined;
+  const dwell = dwellHoursFor(selectedCargo.id) ?? 0;
+  const met = triggerMet(dwell);
+  const refuse = (cargoId: string, detail: string) => {
+    logEvent(cargoId, "Payout refused — trigger not met");
+    toast.error(`Trigger not met · cargo #${cargoId} — no payout`, { description: detail, duration: 10000 });
+  };
 
   const reviewSettlement = async () => {
     const cargo = selectedCargo;
     const coverage = 2500;
     const paid = { stage: "paid" as const, coverage, premium: premiumFor(cargo.risk, coverage) };
+    if (!met && !wallet.connected) {
+      refuse(cargo.id, `Oracle reports dwell ${dwell}h ≤ ${TRIGGER_THRESHOLD_HOURS}h threshold — the escrow contract refuses this payout (Simulated).`);
+      return;
+    }
     if (!wallet.connected) {
       updatePolicy(cargo.id, { ...paid, tx: mockTxHash(), onChain: false, payoutMs: 0 }, "Settlement acknowledged (simulated)");
       toast.success(`Settlement acknowledged for cargo #${cargo.id} (Simulated)`, { description: `${coverage.toLocaleString()} Demo USDC · (or ${ekzt(coverage)} via AIFC Gateway)` });
@@ -193,6 +205,10 @@ function Dashboard() {
       const res = await insurerAction({
         data: { action: "instant", beneficiary: wallet.publicKey.toBase58(), cargoId: cargo.id, riskScore: cargo.risk },
       });
+      if (!res.ok && res.reason === "trigger_not_met") {
+        refuse(cargo.id, res.message);
+        return;
+      }
       if (!res.ok && res.reason === "not_configured") {
         updatePolicy(cargo.id, { ...paid, tx: mockTxHash(), onChain: false, payoutMs: 0 }, "Settlement acknowledged (simulated)");
         toast.success(`Settlement acknowledged for cargo #${cargo.id} (Simulated)`, { description: "Insurer treasury is offline — no on-chain payout was made." });
@@ -271,6 +287,7 @@ function Dashboard() {
         </section>
 
         <section className="mt-4 grid gap-4 xl:grid-cols-[1.65fr_1fr]">
+          <div className="grid min-w-0 content-start gap-4">
           <div className="panel min-w-0 overflow-hidden">
             <PanelHeader icon={MapPin} eyebrow="Live route telemetry" title="Middle Corridor tracker" aside={<span className="flex items-center gap-2"><DemoTag kind="DEMO DATA" /><span className="status-pill status-transit"><Activity className="size-3" /> 18 signals</span></span>} />
             <div className="corridor-map">
@@ -329,9 +346,21 @@ function Dashboard() {
               </div>
             </div>
           </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <CaspianVault walletUsdc={walletUsdc} staked={staked} tvl={4_250_000 + staked} onChange={(d) => { setStaked((s) => s + d); setWalletUsdc((w) => w - d); }} />
+              <div className="panel">
+                <PanelHeader icon={Radio} eyebrow="Sensor network" title="Live IoT telemetry" aside={<DemoTag kind="SIMULATED" />} />
+                <div className="grid grid-cols-3 divide-x divide-border px-2 py-5">
+                  <Sensor icon={Thermometer} label="Temperature" value="4.2°C" note="Stable" />
+                  <Sensor icon={Gauge} label="Speed" value="0 km/h" note="At terminal" />
+                  <Sensor icon={Clock3} label={`Dwell · #${selectedCargo.id}`} value={`${dwell}h`} note={met ? `+${dwell - TRIGGER_THRESHOLD_HOURS}h over ${TRIGGER_THRESHOLD_HOURS}h` : `${TRIGGER_THRESHOLD_HOURS - dwell}h under ${TRIGGER_THRESHOLD_HOURS}h`} alert={met} />
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="grid min-w-0 gap-4">
-            <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
+            <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} dwellHours={dwell} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
             <div className="panel overflow-hidden">
               <PanelHeader icon={Sparkles} eyebrow="SilkSol prediction engine" title={`Delay risk · #${selectedCargo.id}`} aside={<span className="flex items-center gap-2"><DemoTag kind="SIMULATED" /><span className="text-xl font-semibold text-warning">{selectedCargo.risk}%</span></span>} />
               <div className="px-2 pb-2 pt-4 sm:px-4">
@@ -351,17 +380,6 @@ function Dashboard() {
                 <div className="mx-2 mb-3 flex items-center justify-between border-t border-border pt-3 text-[11px] text-muted-foreground"><span>Predicted peak: <strong className="text-foreground">68% at 20:00</strong></span><span className="flex items-center gap-1 text-warning"><TrendingDown className="size-3" /> Recovery expected</span></div>
               </div>
             </div>
-
-            <CaspianVault walletUsdc={walletUsdc} staked={staked} tvl={4_250_000 + staked} onChange={(d) => { setStaked((s) => s + d); setWalletUsdc((w) => w - d); }} />
-
-            <div className="panel">
-              <PanelHeader icon={Radio} eyebrow="Sensor network" title="Live IoT telemetry" aside={<DemoTag kind="SIMULATED" />} />
-              <div className="grid grid-cols-3 divide-x divide-border px-2 py-5">
-                <Sensor icon={Thermometer} label="Temperature" value="4.2°C" note="Stable" />
-                <Sensor icon={Gauge} label="Speed" value="0 km/h" note="At terminal" />
-                <Sensor icon={Clock3} label="Dwell time" value="21.6h" note="+3.6h over" alert />
-              </div>
-            </div>
           </div>
         </section>
 
@@ -370,14 +388,15 @@ function Dashboard() {
             <div>
               <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary"><CircleDollarSign className="size-4" /> Autonomous settlement <DemoTag kind={settleOnChain ? "DEVNET" : "SIMULATED"} /></div>
               <h2 className="text-lg font-semibold">Smart contract trigger · #{selectedCargo.id}</h2>
-              <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Oracle event for cargo #{selectedCargo.id} ({selectedCargo.location}): delay of {SIMULATED_DWELL_HOURS} h exceeded the insured {TRIGGER_THRESHOLD_HOURS}-hour threshold. Select another cargo in the table to settle its policy.</p>
-              <div className="mt-4 flex flex-wrap gap-2"><span className="condition-chip"><Clock3 className="size-3" /> Delay {SIMULATED_DWELL_HOURS} h (simulated)</span><span className="condition-chip"><ShieldCheck className="size-3" /> Trigger &gt; {TRIGGER_THRESHOLD_HOURS} h</span></div>
+              <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">{met ? <>Oracle event for cargo #{selectedCargo.id} ({selectedCargo.location}): delay of {dwell} h exceeded the insured {TRIGGER_THRESHOLD_HOURS}-hour threshold.</> : <>Oracle reading for cargo #{selectedCargo.id} ({selectedCargo.location}): dwell of {dwell} h is within the insured {TRIGGER_THRESHOLD_HOURS}-hour threshold — the contract refuses a payout.</>} Select another cargo in the table to settle its policy.</p>
+              <div className="mt-4 flex flex-wrap gap-2"><span className="condition-chip"><Clock3 className="size-3" /> Delay {dwell} h (simulated)</span><span className="condition-chip"><ShieldCheck className="size-3" /> Trigger &gt; {TRIGGER_THRESHOLD_HOURS} h · {met ? "met" : "not met"}</span></div>
             </div>
             <div className="hidden items-center gap-2 lg:flex"><div className="h-px w-12 bg-border" /><div className="flex size-10 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary shadow-glow"><Zap className="size-4" /></div><div className="h-px w-12 bg-border" /></div>
             <div className="settlement-result">
               <div className="flex items-start gap-3">
                 <div className={`flex size-10 shrink-0 items-center justify-center rounded-md ${settled ? "bg-success/15 text-success" : "bg-primary/15 text-primary"}`}>{settled ? <Check className="size-5" /> : <Zap className="size-5" />}</div>
-                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p><p className="mt-0.5 text-xs text-muted-foreground">(or {ekzt(2500)} via AIFC Gateway)</p>{settleOnChain ? <p className="mt-1 text-xs font-semibold text-success">On-chain: +0.01 Devnet SOL paid to your wallet by the escrow program</p> : settled ? <p className="mt-1 text-[11px] text-warning">Simulated only — no wallet was connected, nothing was sent on-chain. Connect Phantom (Devnet) to receive a real 0.01 SOL payout.</p> : <p className="mt-1 text-[11px] text-muted-foreground">{wallet.connected ? "Your connected wallet receives a real 0.01 Devnet SOL payout." : wallet.connecting ? "Waiting for your wallet to approve the connection…" : "Connect a Devnet wallet to receive a real 0.01 SOL payout."}</p>}</div>
+                {!met && !settled ? <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Trigger not met</p><p className="mt-1 text-xl font-semibold">No payout owed</p><p className="mt-1 text-[11px] text-muted-foreground">Dwell {dwell} h ≤ {TRIGGER_THRESHOLD_HOURS} h. Review settlement to see the escrow contract refuse the claim{wallet.connected ? " (checked against the Devnet program, nothing is sent)" : ""}.</p></div> :
+                <div className="min-w-0 flex-1"><p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-success">{settled ? "Settlement acknowledged" : "Compensation triggered"}</p><p className="mt-1 text-xl font-semibold">2,500 Demo USDC <span className="text-sm font-normal text-muted-foreground">sent via Solana Devnet</span></p><p className="mt-0.5 text-xs text-muted-foreground">(or {ekzt(2500)} via AIFC Gateway)</p>{settleOnChain ? <p className="mt-1 text-xs font-semibold text-success">On-chain: +0.01 Devnet SOL paid to your wallet by the escrow program</p> : settled ? <p className="mt-1 text-[11px] text-warning">Simulated only — no wallet was connected, nothing was sent on-chain. Connect Phantom (Devnet) to receive a real 0.01 SOL payout.</p> : <p className="mt-1 text-[11px] text-muted-foreground">{wallet.connected ? "Your connected wallet receives a real 0.01 Devnet SOL payout." : wallet.connecting ? "Waiting for your wallet to approve the connection…" : "Connect a Devnet wallet to receive a real 0.01 SOL payout."}</p>}</div>}
               </div>
               <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center">
                 {settleSig ? <a href={explorerTx(settleSig)} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 font-mono text-xs text-primary hover:text-primary/80">tx: {shortHash(settleSig)} <ExternalLink className="size-3" /></a> : <span className="text-[11px] text-muted-foreground">{settled ? "Simulated — no on-chain transaction" : "Transaction link appears after the payout"}</span>}

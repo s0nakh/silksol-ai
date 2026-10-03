@@ -23,6 +23,7 @@ import {
   lockCollateralOnChain,
   settlePayoutIx,
   submitTelemetryIx,
+  dwellHoursFor,
   triggerAndSettleOnChain,
   vaultPda,
 } from "../../src/components/solana/escrowProgram.ts";
@@ -344,7 +345,7 @@ describe("silksol_escrow", () => {
     assert.equal(locked.collateral, BigInt(COLLATERAL));
 
     const before = await connection.getBalance(user.publicKey);
-    await triggerAndSettleOnChain(wallet, connection, vault, 68);
+    await triggerAndSettleOnChain(wallet, connection, vault, dwellHoursFor("JOL-8921")!, 68);
     const s = await fetchVault(new PublicKey(vault));
     assert.equal(s.dwellHours, 96);
     assert.equal(s.riskScore, 68);
