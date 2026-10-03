@@ -48,7 +48,7 @@ With a Phantom/Solflare wallet connected on Devnet, the dashboard runs real tran
 
 1. **Issue Parametric Policy** → the wallet pays a 0.001 Devnet SOL premium to the treasury (wallet signs).
 2. **Lock Collateral & Sign** → the treasury calls `initialize_vault` (0.01 Devnet SOL, `beneficiary` = the connected wallet).
-3. **Trigger Oracle Event** → one treasury-signed transaction: `submit_telemetry(96h)` → `evaluate_trigger` → `settle_payout` → `close_vault` (rent back to the treasury).
+3. **Trigger Oracle Event** → one treasury-signed transaction: `submit_telemetry(<cargo dwell>)` → `evaluate_trigger` → `settle_payout` → `close_vault` (rent back to the treasury). If the cargo's dwell is ≤ the threshold (e.g. #TRK-7782, 18h), the program refuses the claim with `NotEligible`; the insurer only simulates that transaction, so nothing lands on-chain.
 4. **Review settlement** (bottom panel) → all of the above for cargo #JOL-8921 in a single transaction — one click, no signature, **+0.01 Devnet SOL appears in the wallet**.
 
 Every transaction carries an [SPL Memo](https://spl.solana.com/memo) so it is self-describing in Explorer and in the wallet history:

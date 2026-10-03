@@ -25,6 +25,7 @@ import {
   WalletCards,
   Waves,
   Zap,
+  Info,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -38,6 +39,7 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
+import { Tooltip as HintTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SolanaProviders } from "@/components/solana/SolanaProviders";
 import { WalletButton } from "@/components/solana/WalletButton";
 import { CaspianVault } from "@/components/solana/CaspianVault";
@@ -142,6 +144,8 @@ function Dashboard() {
   const [settling, setSettling] = useState(false);
   const wallet = useWallet();
   const [policies, setPolicies] = useState<Record<string, Policy>>({});
+  // Cargo whose claim the escrow contract refused (trigger not met) → reason shown in the table.
+  const [refused, setRefused] = useState<Record<string, string>>({});
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [walletUsdc, setWalletUsdc] = useState(10000);
   const [staked, setStaked] = useState(0);
@@ -169,6 +173,7 @@ function Dashboard() {
     if (prev === null || prev === walletKey) return;
     toast.dismiss();
     setPolicies({});
+    setRefused({});
     setWalletUsdc(10000);
   }, [walletKey]);
 
@@ -179,8 +184,10 @@ function Dashboard() {
   const settleSig = settleOnChain ? selectedPolicy.tx : undefined;
   const dwell = dwellHoursFor(selectedCargo.id) ?? 0;
   const met = triggerMet(dwell);
+  const markRefused = (cargoId: string, detail: string) => setRefused((prev) => ({ ...prev, [cargoId]: detail }));
   const refuse = (cargoId: string, detail: string) => {
     logEvent(cargoId, "Payout refused — trigger not met");
+    markRefused(cargoId, detail);
     toast.error(`Trigger not met · cargo #${cargoId} — no payout`, { description: detail, duration: 10000 });
   };
 
@@ -245,7 +252,7 @@ function Dashboard() {
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
             <div className="solana-mark" aria-hidden="true"><span /><span /><span /></div>
-            <div className="text-[17px] font-bold tracking-normal">SilkSol <span className="text-gradient">AI</span></div>
+            <div className="whitespace-nowrap text-[17px] font-bold tracking-normal">SilkSol <span className="text-gradient">AI</span></div>
           </div>
           <div className="hidden h-6 w-px bg-border lg:block" />
           <div className="hidden items-center gap-2 text-xs text-muted-foreground lg:flex">
@@ -321,6 +328,7 @@ function Dashboard() {
                 <table className="w-full min-w-[720px] text-left">
                   <thead><tr className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground"><th>Cargo ID</th><th>Route</th><th>Location</th><th>ETA</th><th>Status</th><th>AI risk</th><th>Premium</th><th>Policy</th></tr></thead>
                   <tbody>
+                    <TooltipProvider delayDuration={100}>
                     {visibleCargoes.map((cargo) => {
                       const p = policyOf(cargo.id);
                       return (
@@ -332,7 +340,14 @@ function Dashboard() {
                         <td><span className={cargo.risk > 60 ? "font-semibold text-warning" : "font-semibold text-success"}>{cargo.risk}%</span></td>
                         <td className="whitespace-nowrap">{premiumFor(cargo.risk, 2500)} <span className="text-[10px]">USDC</span></td>
                         <td>
-                          {p.stage === "none" ? (
+                          {refused[cargo.id] && p.stage !== "paid" ? (
+                            <HintTooltip>
+                              <TooltipTrigger asChild>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedCargo(cargo); }} className="status-pill status-ineligible gap-1 whitespace-nowrap">Not Eligible <Info className="size-3" /></button>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-xs text-xs">{refused[cargo.id]}</TooltipContent>
+                            </HintTooltip>
+                          ) : p.stage === "none" ? (
                             <Button size="sm" variant="secondary" className="h-7 whitespace-nowrap px-2 text-[11px]" onClick={(e) => { e.stopPropagation(); setSelectedCargo(cargo); updatePolicy(cargo.id, { stage: "issued", coverage: 2500, premium: premiumFor(cargo.risk, 2500) }, "Policy issued"); }}>Issue Parametric Policy</Button>
                           ) : (
                             <span className="text-[11px] capitalize text-primary">{p.stage}</span>
@@ -341,6 +356,7 @@ function Dashboard() {
                       </tr>
                       );
                     })}
+                    </TooltipProvider>
                   </tbody>
                 </table>
               </div>
@@ -360,7 +376,7 @@ function Dashboard() {
           </div>
 
           <div className="grid min-w-0 gap-4">
-            <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} dwellHours={dwell} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
+            <PolicyEngine cargoId={selectedCargo.id} risk={selectedCargo.risk} dwellHours={dwell} onRefused={(detail) => markRefused(selectedCargo.id, detail)} policy={policyOf(selectedCargo.id)} onUpdate={(p, e) => updatePolicy(selectedCargo.id, p, e)} />
             <div className="panel overflow-hidden">
               <PanelHeader icon={Sparkles} eyebrow="SilkSol prediction engine" title={`Delay risk · #${selectedCargo.id}`} aside={<span className="flex items-center gap-2"><DemoTag kind="SIMULATED" /><span className="text-xl font-semibold text-warning">{selectedCargo.risk}%</span></span>} />
               <div className="px-2 pb-2 pt-4 sm:px-4">

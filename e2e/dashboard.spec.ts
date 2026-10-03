@@ -138,7 +138,10 @@ test.describe("Parametric policy lifecycle", () => {
     await expect(page.getByText("Trigger not met · cargo #MCC-2048 — no payout")).toBeVisible();
     await expect(page.getByText(/dwell 6h ≤ 72h threshold/)).toBeVisible();
     await expect(engine.getByText("Claim Paid Out")).toHaveCount(0);
-    await expect(row).toContainText("locked");
+    // The table flags the refused claim; hovering explains why.
+    await expect(row).not.toContainText("locked");
+    await row.getByRole("button", { name: "Not Eligible" }).hover();
+    await expect(page.getByRole("tooltip")).toContainText("dwell 6h ≤ 72h threshold");
   });
 
   test("premium is priced from the AI risk score", async ({ page }) => {
@@ -193,6 +196,7 @@ test.describe("Autonomous settlement", () => {
 
     await expect(page.getByText("Trigger not met · cargo #TRK-7782 — no payout")).toBeVisible();
     await expect(cargoRow(page, "TRK-7782")).not.toContainText("Claim Paid Out");
+    await expect(cargoRow(page, "TRK-7782").getByRole("button", { name: "Not Eligible" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Review settlement/ })).toBeEnabled();
   });
 });

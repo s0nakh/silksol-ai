@@ -120,10 +120,10 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Check | Result |
 |---|---|
-| Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 passed** |
-| E2E suite against a local build | **17 / 17 passed** |
-| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 passed** |
-| Production build & TypeScript type-check | **Passed** |
+| Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 passed** |
+| E2E suite against a local build | ✅ **17 / 17 passed** |
+| E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 passed** |
+| Production build & TypeScript type-check | ✅ **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Insurer payout to a user wallet with memo (Review settlement) | ✅ [payout tx](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL to the beneficiary) |
 | Live insurer/oracle ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → payout | ✅ [payout tx](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
@@ -169,7 +169,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 - **World Bank**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (Sept 28, 2026): investments could more than triple corridor volumes and halve travel times by 2040; port and border delays are the main bottleneck. [Press release](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
 - **Argus** freight assessment (Sept 2026): Xi'an → Tbilisi/Poti **$6,900–7,200 per 40HC**, Xi'an → Alat/Baku $6,750–7,200 per 40HC. [Trend.az summary](https://www.trend.az/casia/kazakhstan/4229949.html)
-- **TITR / Ministry of Transport of Kazakhstan**: Middle Corridor volumes grew from 0.8 to **~4.5 million tonnes a year**. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+- **TITR / Ministry of Transport of Kazakhstan**: Middle Corridor volumes grew from 0.8 to **~4.5 million tonnes a year**. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
 **Global Web3 benchmarks.** Parametric cover on-chain is proven in other verticals: **Etherisc** (flight-delay and crop insurance), **Arbol** (parametric weather cover), **Nayms** (regulated on-chain insurance marketplace). SilkSol AI applies the same model to a corridor nobody covers: Caspian port dwell times (Aktau, Kuryk, Baku), with AIFC / eKZT settlement built in.
 
@@ -347,10 +347,10 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Проверка | Результат |
 |---|---|
-| Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 пройдено** |
-| E2E-набор на локальной сборке | **17 / 17 пройдено** |
-| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 пройдено** |
-| Продакшн-сборка и проверка типов TypeScript | **Пройдено** |
+| Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 пройдено** |
+| E2E-набор на локальной сборке | ✅ **17 / 17 пройдено** |
+| E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 пройдено** |
+| Продакшн-сборка и проверка типов TypeScript | ✅ **Пройдено** |
 | Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Выплата страховщика на кошелёк пользователя с Memo (Review settlement) | ✅ [транзакция выплаты](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL получателю) |
 | Живой страховщик/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → выплата | ✅ [транзакция выплаты](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
@@ -392,7 +392,7 @@ npm run test:e2e:live             # на живом приложении silksol
 
 - **Всемирный банк**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (28 сентября 2026): инвестиции могут более чем утроить объёмы коридора и вдвое сократить время в пути к 2040 году; главное узкое место — задержки в портах и на границах. [Пресс-релиз](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
 - Ценовое агентство **Argus** (сентябрь 2026): Сиань → Тбилиси/Поти **$6 900–7 200 за 40HC**, Сиань → Алят/Баку $6 750–7 200 за 40HC. [Обзор Trend.az](https://www.trend.az/casia/kazakhstan/4229949.html)
-- **ТМТМ / Министерство транспорта РК**: объём перевозок по Среднему коридору вырос с 0,8 до **~4,5 млн тонн в год**. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+- **ТМТМ / Министерство транспорта РК**: объём перевозок по Среднему коридору вырос с 0,8 до **~4,5 млн тонн в год**. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
 **Глобальные Web3-бенчмарки.** Параметрическое страхование в блокчейне уже работает в других отраслях: **Etherisc** (задержки авиарейсов и агрориски), **Arbol** (погодные параметрические покрытия), **Nayms** (регулируемый on-chain рынок страхования). SilkSol AI применяет ту же модель к коридору, который никто не покрывает: простои в каспийских портах (Актау, Курык, Баку), с расчётами через МФЦА / eKZT.
 
@@ -556,10 +556,10 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Тексеру | Нәтиже |
 |---|---|
-| Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | **11 / 11 өтті** |
-| Жергілікті құрастырмадағы E2E жиынтығы | **17 / 17 өтті** |
-| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | **17 / 17 өтті** |
-| Продакшн құрастырма және TypeScript типтерін тексеру | **Өтті** |
+| Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 өтті** |
+| Жергілікті құрастырмадағы E2E жиынтығы | ✅ **17 / 17 өтті** |
+| Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 өтті** |
+| Продакшн құрастырма және TypeScript типтерін тексеру | ✅ **Өтті** |
 | Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
 | Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement) | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (алушыға +0.01 SOL) |
 | Тірі сақтандырушы/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → төлем | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
@@ -601,7 +601,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 
 - **Дүниежүзілік банк**, *Integration: World-Class Trade Logistics Along the Trans-Caspian Transport Corridor* (2026 жылғы 28 қыркүйек): инвестициялар 2040 жылға қарай дәліз көлемін үш еседен астам арттырып, жол уақытын екі есе қысқартуы мүмкін; басты кедергі — порттар мен шекаралардағы кідірістер. [Баспасөз релизі](https://www.worldbank.org/en/news/press-release/2026/09/28/trans-caspian-transport-corridor-investments-spur-growth-and-create-millions-jobs)
 - **Argus** баға агенттігі (2026 жылғы қыркүйек): Сиань → Тбилиси/Поти **40HC үшін $6 900–7 200**, Сиань → Әлят/Баку 40HC үшін $6 750–7 200. [Trend.az шолуы](https://www.trend.az/casia/kazakhstan/4229949.html)
-- **ТХКБ / ҚР Көлік министрлігі**: Орта дәліз бойынша тасымал көлемі жылына 0,8-ден **~4,5 млн тоннаға** дейін өсті. [The Times of Central Asia](https://timesca.com/middle-corridor-must-get-faster-titr-chief-tells-tca/)
+- **ТХКБ / ҚР Көлік министрлігі**: Орта дәліз бойынша тасымал көлемі жылына 0,8-ден **~4,5 млн тоннаға** дейін өсті. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
 **Жаһандық Web3 бенчмарктері.** Блокчейндегі параметрлік сақтандыру басқа салаларда жұмыс істеп тұр: **Etherisc** (рейс кешігуі және агротәуекелдер), **Arbol** (ауа райына байланысты параметрлік өтелім), **Nayms** (реттелетін on-chain сақтандыру нарығы). SilkSol AI осы модельді ешкім қамтымаған дәлізге қолданады: Каспий порттарындағы тұрып қалу (Ақтау, Құрық, Баку), есеп айырысу AIFC / eKZT арқылы.
 

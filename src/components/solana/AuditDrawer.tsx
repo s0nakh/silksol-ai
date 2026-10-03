@@ -13,7 +13,7 @@ export function AuditDrawer({ logs }: { logs: AuditLog[] }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="secondary"><ScrollText className="size-4" /><span className="hidden md:inline">cNFT Audit Trail</span><DemoTag kind="SIMULATED" /></Button>
+        <Button variant="secondary"><ScrollText className="size-4" /><span className="hidden md:inline">cNFT Audit Trail</span><DemoTag kind="SIMULATED" className="hidden sm:inline-flex" /></Button>
       </SheetTrigger>
       <SheetContent className="flex w-full flex-col gap-4 overflow-y-auto sm:max-w-md">
         <SheetHeader>

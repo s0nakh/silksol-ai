@@ -21,11 +21,13 @@ type Props = {
   cargoId: string;
   risk: number;
   dwellHours: number;
+  /** Called with the reason when the escrow contract refuses a claim (trigger not met). */
+  onRefused: (detail: string) => void;
   policy: Policy;
   onUpdate: (p: Policy, event: string) => void;
 };
 
-export function PolicyEngine({ cargoId, risk, dwellHours, policy, onUpdate }: Props) {
+export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onUpdate }: Props) {
   const wallet = useWallet();
   const { connection } = useConnection();
   const { connected, signMessage } = wallet;
@@ -124,8 +126,10 @@ export function PolicyEngine({ cargoId, risk, dwellHours, policy, onUpdate }: Pr
   };
 
   const met = triggerMet(dwellHours);
-  const refuse = (detail: string) =>
+  const refuse = (detail: string) => {
+    onRefused(detail);
     toast.error(`Trigger not met · cargo #${cargoId} — no payout`, { description: detail, duration: 10000 });
+  };
 
   const trigger = async () => {
     if (policy.insurer && policy.policyId && wallet.publicKey) {
