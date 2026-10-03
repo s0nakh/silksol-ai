@@ -52,6 +52,8 @@ import { TRIGGER_THRESHOLD_HOURS, dwellHoursFor, triggerMet } from "@/components
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 
+const SITE_URL = "https://silksol.datariglab.kz";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -64,10 +66,24 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "SilkSol AI — Corridor Intelligence" },
       {
         property: "og:description",
-        content: "Cargo risk intelligence and parametric settlement demo on Solana Devnet.",
+        content:
+          "Parametric cargo delay cover for the Middle Corridor: an escrow contract on Solana Devnet pays when Caspian port dwell time exceeds 72 h.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "SilkSol AI" },
+      { property: "og:url", content: SITE_URL },
+      // Social preview card (Telegram, X, Discord, LinkedIn); must be an absolute URL.
+      { property: "og:image", content: `${SITE_URL}/og-image.png` },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "SilkSol AI — parametric cargo delay cover for the Middle Corridor" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SilkSol AI — Corridor Intelligence" },
+      {
+        name: "twitter:description",
+        content: "Parametric cargo delay cover for the Middle Corridor, settled on Solana Devnet.",
+      },
+      { name: "twitter:image", content: `${SITE_URL}/og-image.png` },
     ],
   }),
   component: () => (
