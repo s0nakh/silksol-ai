@@ -17,6 +17,10 @@ export async function insurerAction({ data }: { data: InsurerRequest }): Promise
     if (typeof json?.ok !== "boolean") throw new Error("Bad response");
     return json;
   } catch {
-    return { ok: false, reason: "not_configured", message: "SilkSol insurer service is unreachable." };
+    return {
+      ok: false,
+      reason: "not_configured",
+      message: "SilkSol insurer service is unreachable.",
+    };
   }
 }

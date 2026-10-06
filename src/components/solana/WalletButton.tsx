@@ -33,7 +33,11 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
         .catch(() => undefined);
     load();
     // Payouts arrive from the insurer without a wallet prompt, so keep the balance live.
-    const sub = connection.onAccountChange(publicKey, (acc) => active && setSol(acc.lamports / LAMPORTS_PER_SOL), "confirmed");
+    const sub = connection.onAccountChange(
+      publicKey,
+      (acc) => active && setSol(acc.lamports / LAMPORTS_PER_SOL),
+      "confirmed",
+    );
     const id = window.setInterval(load, 10_000);
     return () => {
       active = false;
@@ -49,7 +53,8 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
     const id = window.setTimeout(() => {
       forceDisconnect();
       toast.error(`${wallet?.adapter.name ?? "Wallet"} did not respond`, {
-        description: "Click the wallet icon in your browser toolbar, unlock it, make sure it is on Devnet, then press Connect wallet again.",
+        description:
+          "Click the wallet icon in your browser toolbar, unlock it, make sure it is on Devnet, then press Connect wallet again.",
         duration: 12000,
       });
     }, 30_000);
@@ -87,7 +92,8 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
           {connecting && (
             <>
               <p className="px-2 py-1.5 text-[11px] leading-4 text-warning">
-                Waiting for {wallet?.adapter.name ?? "your wallet"} — approve the request in its popup (click the extension icon if no window appeared).
+                Waiting for {wallet?.adapter.name ?? "your wallet"} — approve the request in its
+                popup (click the extension icon if no window appeared).
               </p>
               <DropdownMenuItem onClick={forceDisconnect}>
                 <LogOut className="size-4" /> Cancel and retry
@@ -96,15 +102,21 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
             </>
           )}
           {wallets.map((w) => {
-            const installed = w.readyState === WalletReadyState.Installed || w.readyState === WalletReadyState.Loadable;
+            const installed =
+              w.readyState === WalletReadyState.Installed ||
+              w.readyState === WalletReadyState.Loadable;
             return (
               <DropdownMenuItem
                 key={w.adapter.name}
-                onClick={() => (installed ? select(w.adapter.name) : window.open(w.adapter.url, "_blank"))}
+                onClick={() =>
+                  installed ? select(w.adapter.name) : window.open(w.adapter.url, "_blank")
+                }
               >
                 <img src={w.adapter.icon} alt="" className="size-4" />
                 {w.adapter.name}
-                <span className="ml-auto text-[10px] text-muted-foreground">{installed ? "Detected" : "Install"}</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">
+                  {installed ? "Detected" : "Install"}
+                </span>
               </DropdownMenuItem>
             );
           })}
@@ -122,19 +134,31 @@ export function WalletButton({ demoUsdc }: { demoUsdc: number }) {
       <DropdownMenuTrigger asChild>
         <Button variant="secondary">
           <span className="size-2 rounded-full bg-success" />
-          <span className="font-mono text-xs">{addr ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : ""}</span>
+          <span className="font-mono text-xs">
+            {addr ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : ""}
+          </span>
           <DemoTag kind="DEVNET" className="hidden sm:inline-flex" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel className="flex items-center gap-2 text-xs">Devnet / Demo balance <DemoTag kind="DEVNET" /></DropdownMenuLabel>
+        <DropdownMenuLabel className="flex items-center gap-2 text-xs">
+          Devnet / Demo balance <DemoTag kind="DEVNET" />
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="space-y-1.5 px-2 py-1.5 text-xs">
-          <div className="flex justify-between"><span className="text-muted-foreground">Devnet SOL</span><span className="font-semibold">{sol === null ? "—" : sol.toFixed(4)}</span></div>
-          <div className="flex justify-between"><span className="text-muted-foreground">Demo USDC</span><span className="font-semibold">{demoUsdc.toLocaleString()}</span></div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Devnet SOL</span>
+            <span className="font-semibold">{sol === null ? "—" : sol.toFixed(4)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Demo USDC</span>
+            <span className="font-semibold">{demoUsdc.toLocaleString()}</span>
+          </div>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={forceDisconnect}><LogOut className="size-4" /> Disconnect</DropdownMenuItem>
+        <DropdownMenuItem onClick={forceDisconnect}>
+          <LogOut className="size-4" /> Disconnect
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

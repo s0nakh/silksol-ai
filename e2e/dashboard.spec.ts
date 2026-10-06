@@ -191,12 +191,16 @@ test.describe("Autonomous settlement", () => {
   test("refuses settlement for a cargo whose dwell is below the trigger", async ({ page }) => {
     await cargoRow(page, "TRK-7782").click();
     await expect(page.getByText("No payout owed")).toBeVisible();
-    await expect(page.getByText(/dwell of 18 h is within the insured 72-hour threshold/)).toBeVisible();
+    await expect(
+      page.getByText(/dwell of 18 h is within the insured 72-hour threshold/),
+    ).toBeVisible();
     await page.getByRole("button", { name: /Review settlement/ }).click();
 
     await expect(page.getByText("Trigger not met · cargo #TRK-7782 — no payout")).toBeVisible();
     await expect(cargoRow(page, "TRK-7782")).not.toContainText("Claim Paid Out");
-    await expect(cargoRow(page, "TRK-7782").getByRole("button", { name: "Not Eligible" })).toBeVisible();
+    await expect(
+      cargoRow(page, "TRK-7782").getByRole("button", { name: "Not Eligible" }),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: /Review settlement/ })).toBeEnabled();
   });
 });
