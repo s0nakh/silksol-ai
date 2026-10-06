@@ -16,3 +16,5 @@ npx -y esbuild@0.25.10 oracle/netlify/functions/insurer.mts \
   --alias:rpc-websockets=./node_modules/rpc-websockets/dist/index.browser.mjs \
   "--banner:js=import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);"
 rm -rf "$B"
+# The scheduled monitor has no dependencies; Netlify picks it up as-is.
+cp "$R/oracle/netlify/functions/monitor.mjs" "$R/oracle/dist-functions/"
