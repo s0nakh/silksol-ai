@@ -125,9 +125,9 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 | E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 passed** |
 | Production build & TypeScript type-check | ✅ **Passed** |
 | Program deployed to Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
-| Insurer payout to a user wallet with memo (Review settlement) | ✅ [payout tx](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL to the beneficiary) |
-| Live insurer/oracle ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → payout | ✅ [payout tx](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
-| End-to-end on Devnet: lock collateral → trigger → payout (self-funded) | ✅ [lock tx](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [payout tx](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (settled in ~1.4 s) |
+| Insurer payout to a user wallet with memo (Review settlement), signed by the insurer **and** the separate oracle key | ✅ [payout tx](https://explorer.solana.com/tx/7AdYfm732GsXg5NC7NkhfcUSHvLstGMkgmPw1LcdihS1LtTYSe84s1ciTfy9pQ4pNXvPxgLfJNnTjKKjVY3rHad?cluster=devnet) (+0.01 SOL to the beneficiary) |
+| Live insurer/oracle ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)): lock collateral → oracle trigger → payout (#KZL-4107, 110h > 72h) | ✅ [lock tx](https://explorer.solana.com/tx/4VGWdvS1G2rBzLbewsb2urUzGGXuHc9vSXa7XjXxk599KhegTwqDPFFRKfa1uG1r6EyUEmFwRiA5LaECb5PMLawi?cluster=devnet) · [payout tx](https://explorer.solana.com/tx/65smYPFhEPfLtT6uvgURVoSmxpMWUK5y9sD7RXve9XFUWsd4AsexiAFKYv8mY77CofGb3HKhX2P2GhRK466vdXzQ?cluster=devnet) |
+| Program refuses a vault whose oracle is the insurer; refuses #TRK-7782 (18h ≤ 72h) | ✅ `OracleIsInsurer` · `NotEligible` (simulated on Devnet, nothing lands) |
 
 ### E2E suite
 
@@ -355,9 +355,9 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 | E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 пройдено** |
 | Продакшн-сборка и проверка типов TypeScript | ✅ **Пройдено** |
 | Программа развёрнута в Devnet | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
-| Выплата страховщика на кошелёк пользователя с Memo (Review settlement) | ✅ [транзакция выплаты](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (+0.01 SOL получателю) |
-| Живой страховщик/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → выплата | ✅ [транзакция выплаты](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
-| Полный цикл в Devnet: залог → триггер → выплата (за свой счёт) | ✅ [залог](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [выплата](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (~1.4 с) |
+| Выплата страховщика на кошелёк пользователя с Memo (Review settlement), подписи страховщика **и** отдельного ключа оракула | ✅ [транзакция выплаты](https://explorer.solana.com/tx/7AdYfm732GsXg5NC7NkhfcUSHvLstGMkgmPw1LcdihS1LtTYSe84s1ciTfy9pQ4pNXvPxgLfJNnTjKKjVY3rHad?cluster=devnet) (+0.01 SOL получателю) |
+| Живой страховщик/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)): залог → триггер оракула → выплата (#KZL-4107, 110 ч > 72 ч) | ✅ [залог](https://explorer.solana.com/tx/4VGWdvS1G2rBzLbewsb2urUzGGXuHc9vSXa7XjXxk599KhegTwqDPFFRKfa1uG1r6EyUEmFwRiA5LaECb5PMLawi?cluster=devnet) · [выплата](https://explorer.solana.com/tx/65smYPFhEPfLtT6uvgURVoSmxpMWUK5y9sD7RXve9XFUWsd4AsexiAFKYv8mY77CofGb3HKhX2P2GhRK466vdXzQ?cluster=devnet) |
+| Программа отклоняет хранилище, где оракул = страховщик; отклоняет #TRK-7782 (18 ч ≤ 72 ч) | ✅ `OracleIsInsurer` · `NotEligible` (симуляция в Devnet, в сеть ничего не уходит) |
 
 #### E2E-набор
 
@@ -567,9 +567,9 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 | Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 өтті** |
 | Продакшн құрастырма және TypeScript типтерін тексеру | ✅ **Өтті** |
 | Бағдарлама Devnet-ке орналастырылған | ✅ [`Gu7gKXNn…Ar9Z`](https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet) |
-| Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement) | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/2vUaDDr7ehwxDoUSt7ohVgRvgcwFrDLN5ReDnq9n9y9mdh8SSmT9yd3eeYfCP2HRWdR1zYzPoopfM6ua28UhB945?cluster=devnet) (алушыға +0.01 SOL) |
-| Тірі сақтандырушы/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)) → төлем | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/qJoAoc2tsSGD4PtPXNW9h6xAQ4cnUWVo2miE3a6TXnnhG5SYLHBFJtcrwjYBE82kaawtYs7XGRBVMCKLD5smFvA?cluster=devnet) |
-| Devnet-тегі толық цикл: кепіл → триггер → төлем (өз есебінен) | ✅ [кепіл](https://explorer.solana.com/tx/381KwL25F1QTCsYsdCm6zRYyVpHrhVwesRzQdcD2VWBraaD8XUJTnS7ngy7BSkdswxbd4vsGEVCf6nEdLf2Qtt4Y?cluster=devnet) · [төлем](https://explorer.solana.com/tx/4uk5unBu9H7PyMf53hstkpMsMZgE15xxxMmPL8TZ6VpNLrJnzWwjrAcFHePfrD4wEV3iH1TYJJtHRHFJGEuT69Yw?cluster=devnet) (~1.4 с) |
+| Сақтандырушының пайдаланушы әмиянына Memo-мен төлемі (Review settlement), сақтандырушы **және** жеке оракул кілті қол қойған | ✅ [төлем транзакциясы](https://explorer.solana.com/tx/7AdYfm732GsXg5NC7NkhfcUSHvLstGMkgmPw1LcdihS1LtTYSe84s1ciTfy9pQ4pNXvPxgLfJNnTjKKjVY3rHad?cluster=devnet) (алушыға +0.01 SOL) |
+| Тірі сақтандырушы/оракул ([silksol-oracle.netlify.app](https://silksol-oracle.netlify.app)): кепіл → оракул триггері → төлем (#KZL-4107, 110 сағ > 72 сағ) | ✅ [кепіл](https://explorer.solana.com/tx/4VGWdvS1G2rBzLbewsb2urUzGGXuHc9vSXa7XjXxk599KhegTwqDPFFRKfa1uG1r6EyUEmFwRiA5LaECb5PMLawi?cluster=devnet) · [төлем](https://explorer.solana.com/tx/65smYPFhEPfLtT6uvgURVoSmxpMWUK5y9sD7RXve9XFUWsd4AsexiAFKYv8mY77CofGb3HKhX2P2GhRK466vdXzQ?cluster=devnet) |
+| Бағдарлама оракулы сақтандырушымен бірдей қойманы қабылдамайды; #TRK-7782 бас тартады (18 сағ ≤ 72 сағ) | ✅ `OracleIsInsurer` · `NotEligible` (Devnet-те симуляция, желіге ештеңе жіберілмейді) |
 
 #### E2E жиынтығы
 
