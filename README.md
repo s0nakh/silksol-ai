@@ -186,6 +186,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
 - Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
 - The demo insurer is rate-limited (per wallet, plus 10 treasury transactions per hour and 40 per day in total, locks and payouts combined) to keep the Devnet treasury alive.
+- A daily health check ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), Netlify scheduled function, 09:00 Aqtau) reads the treasury balance, open escrow vaults and the live dApp, and sends a 🟢/🔴 report to the maintainer's Telegram; below 1 SOL it raises an urgent top-up alert. Read-only: it holds no keys.
 
 ---
 
@@ -413,6 +414,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
 - Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
 - У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 транзакций казны в час и 40 в день — залоги и выплаты вместе), чтобы казна в Devnet не опустела.
+- Ежедневная проверка ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), запланированная функция Netlify, 09:00 по Актау) смотрит баланс казны, открытые хранилища и живое приложение и шлёт 🟢/🔴 отчёт мейнтейнеру в Telegram; если в казне меньше 1 SOL — срочное оповещение о пополнении. Только чтение: ключей у неё нет.
 
 ### 🗺 Дорожная карта: от MVP в Devnet к продакшену
 
@@ -626,6 +628,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
 - Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
 - Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 қазына транзакциясы — кепілдер мен төлемдер бірге), Devnet қазынасы таусылмауы үшін.
+- Күнделікті тексеру ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), Netlify жоспарланған функциясы, Ақтау уақытымен 09:00) қазына балансын, ашық қоймаларды және тірі қосымшаны тексеріп, жүргізушінің Telegram-ына 🟢/🔴 есеп жібереді; қазынада 1 SOL-дан аз қалса, толтыру туралы шұғыл ескерту береді. Тек оқиды: онда кілттер жоқ.
 
 ### 🗺 Жол картасы: Devnet MVP-ден өндіріске дейін
 
