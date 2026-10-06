@@ -4,6 +4,10 @@
 //! An oracle reports the observed dwell time, anyone can crank the deterministic
 //! trigger (`dwell_hours > threshold_hours`), and an eligible vault pays the
 //! beneficiary. No discretionary or ML logic runs on-chain.
+//!
+//! Roles are separated on-chain: the insurer (authority) funds the vault but can never
+//! sign telemetry, and neither the insurer nor the oracle can be the beneficiary.
+//! Cover runs until `coverage_end`; the insurer cannot reclaim collateral before then.
 
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
@@ -26,6 +30,7 @@ pub mod silksol_escrow {
         threshold_hours: u32,
         oracle: Pubkey,
         beneficiary: Pubkey,
+        coverage_end: i64,
     ) -> Result<()> {
         require!(
             !shipment_id.is_empty() && shipment_id.len() <= MAX_SHIPMENT_ID_LEN,
@@ -33,6 +38,14 @@ pub mod silksol_escrow {
         );
         require!(collateral_lamports > 0, EscrowError::ZeroCollateral);
         require!(threshold_hours > 0, EscrowError::ZeroThreshold);
+        let authority = ctx.accounts.authority.key();
+        require_keys_neq!(oracle, authority, EscrowError::OracleIsInsurer);
+        require!(
+            beneficiary != authority && beneficiary != oracle,
+            EscrowError::InvalidBeneficiary
+        );
+        let now = Clock::get()?.unix_timestamp;
+        require!(coverage_end > now, EscrowError::InvalidCoverage);
 
         system_program::transfer(
             CpiContext::new(
@@ -45,9 +58,8 @@ pub mod silksol_escrow {
             collateral_lamports,
         )?;
 
-        let now = Clock::get()?.unix_timestamp;
         let vault = &mut ctx.accounts.vault;
-        vault.authority = ctx.accounts.authority.key();
+        vault.authority = authority;
         vault.oracle = oracle;
         vault.beneficiary = beneficiary;
         vault.policy_id = policy_id;
@@ -60,6 +72,7 @@ pub mod silksol_escrow {
         vault.settled = false;
         vault.created_at = now;
         vault.updated_at = now;
+        vault.coverage_end = coverage_end;
         vault.bump = ctx.bumps.vault;
 
         emit!(VaultInitialized {
@@ -67,6 +80,7 @@ pub mod silksol_escrow {
             shipment_id: vault.shipment_id.clone(),
             collateral: collateral_lamports,
             threshold_hours,
+            coverage_end,
         });
         Ok(())
     }
@@ -76,10 +90,12 @@ pub mod silksol_escrow {
         require!(risk_score <= 100, EscrowError::InvalidRiskScore);
         let vault = &mut ctx.accounts.vault;
         require!(!vault.settled, EscrowError::AlreadySettled);
+        let now = Clock::get()?.unix_timestamp;
+        require!(now <= vault.coverage_end, EscrowError::CoverageEnded);
 
         vault.dwell_hours = dwell_hours;
         vault.risk_score = risk_score;
-        vault.updated_at = Clock::get()?.unix_timestamp;
+        vault.updated_at = now;
 
         emit!(TelemetrySubmitted { vault: vault.key(), dwell_hours, risk_score });
         Ok(())
@@ -127,10 +143,19 @@ pub mod silksol_escrow {
     }
 
     /// Authority closes the vault and reclaims rent (plus collateral if never triggered).
-    /// Blocked while a payout is owed, so the insurer cannot rug an eligible claim.
+    /// Blocked while a payout is owed (including reported telemetry that nobody cranked yet),
+    /// and blocked until cover ends, so the insurer cannot pull collateral from a live policy.
     pub fn close_vault(ctx: Context<CloseVault>) -> Result<()> {
         let vault = &ctx.accounts.vault;
-        require!(vault.settled || !vault.eligible, EscrowError::PayoutPending);
+        if vault.settled {
+            return Ok(());
+        }
+        let owed = vault.eligible || vault.dwell_hours > vault.threshold_hours;
+        require!(!owed, EscrowError::PayoutPending);
+        require!(
+            Clock::get()?.unix_timestamp > vault.coverage_end,
+            EscrowError::CoverageActive
+        );
         Ok(())
     }
 }
@@ -198,6 +223,7 @@ pub struct EscrowVault {
     pub settled: bool,
     pub created_at: i64,
     pub updated_at: i64,
+    pub coverage_end: i64,
     pub bump: u8,
 }
 
@@ -207,6 +233,7 @@ pub struct VaultInitialized {
     pub shipment_id: String,
     pub collateral: u64,
     pub threshold_hours: u32,
+    pub coverage_end: i64,
 }
 
 #[event]
@@ -254,4 +281,14 @@ pub enum EscrowError {
     WrongBeneficiary,
     #[msg("Payout is owed; settle before closing")]
     PayoutPending,
+    #[msg("The insurer cannot act as the oracle")]
+    OracleIsInsurer,
+    #[msg("Beneficiary cannot be the insurer or the oracle")]
+    InvalidBeneficiary,
+    #[msg("Coverage end must be in the future")]
+    InvalidCoverage,
+    #[msg("Coverage period has ended; no more telemetry accepted")]
+    CoverageEnded,
+    #[msg("Coverage is still active; the vault cannot be closed yet")]
+    CoverageActive,
 }

@@ -1,7 +1,8 @@
 import { runInsurer, type InsurerRequest } from "../../../src/lib/insurer";
 
-// SilkSol AI insurer/oracle endpoint (Netlify Function, free tier). The treasury keypair lives only
-// in the Netlify environment variable SILKSOL_TREASURY_SECRET — never in git or the browser bundle.
+// SilkSol AI insurer/oracle endpoint (Netlify Function, free tier). The insurer treasury and the
+// oracle keypairs live only in the Netlify environment variables SILKSOL_TREASURY_SECRET and
+// SILKSOL_ORACLE_SECRET — never in git or the browser bundle.
 
 const ALLOWED = [
   /^https:\/\/silksol\.datariglab\.kz$/,
@@ -41,7 +42,7 @@ export default async (req: Request) => {
 
   const result = await runInsurer(
     body,
-    process.env["SILKSOL_TREASURY_SECRET"],
+    { treasury: process.env["SILKSOL_TREASURY_SECRET"], oracle: process.env["SILKSOL_ORACLE_SECRET"] },
     process.env["SOLANA_RPC_URL"] || "https://api.devnet.solana.com",
   );
   return reply(200, result);

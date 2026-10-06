@@ -1,4 +1,4 @@
-<p align="center"><img src="./Solana%20Colloseum/SilkSol%20AI%20Logo.jpg" alt="SilkSol AI Logo" width="180"/></p>
+<p align="center"><img src="./assets/silksol-ai-logo.jpg" alt="SilkSol AI Logo" width="180"/></p>
 
 <h1 align="center">🚢 SilkSol AI ⚓️</h1>
 
@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
   <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-17%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
-  <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-11%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
+  <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
 </p>
@@ -94,12 +94,12 @@ The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./an
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral and signs oracle telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral, a **separate oracle key** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) signs the dwell-time telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout. The program enforces the split: it rejects a vault whose oracle is the insurer, and the insurer cannot reclaim collateral before the cover period (`coverage_end`) ends (0.01 Devnet SOL as a USDC stand-in). Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
 solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
-node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 ```
 
 ---
@@ -120,7 +120,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Check | Result |
 |---|---|
-| Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 passed** |
+| Solana program tests (local validator, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **13 / 13 passed** |
 | E2E suite against a local build | ✅ **17 / 17 passed** |
 | E2E suite against the live dApp ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 passed** |
 | Production build & TypeScript type-check | ✅ **Passed** |
@@ -179,8 +179,8 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **Caspian Risk Vault:** the liquidity vault in the dApp (TVL, APY) is a simulated later-phase concept, intended only for qualified investors under AIFC rules.
 
 **Known limitations of the MVP.**
-- The insurer and the oracle are one signer (a serverless function). A multi-signer oracle is on the roadmap.
-- The vault has no `coverage_end` yet, so the insurer could close an untriggered vault before the cover period ends. Planned: block `close_vault` until coverage ends.
+- The insurer and the oracle are separate keys and the program enforces it (`OracleIsInsurer`), but both keys are still run by one operator (SilkSol AI). Next: an independent oracle (port/rail data provider), then a multi-signer oracle network.
+- Cover lasts 7 days in the demo (`coverage_end`). Vaults that were locked but never triggered stay open until then.
 - Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
 - Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
 - The demo insurer is rate-limited (per wallet, plus 10 payouts per hour and 40 per day in total) to keep the Devnet treasury alive.
@@ -191,9 +191,9 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 | | Today (Devnet MVP) | Next | Production |
 |---|---|---|---|
-| **Escrow** | ✅ Anchor program live on Devnet, 11 program tests | Security review and audit | Mainnet deployment |
+| **Escrow** | ✅ Anchor program live on Devnet, 13 program tests | Security review and audit | Mainnet deployment |
 | **Payout currency** | ✅ Devnet SOL as a USDC stand-in | SPL USDC escrow vaults | USDC + eKZT dual settlement (AIFC Sandbox) |
-| **Oracle** | ✅ Single insurer signer (serverless function) | Port and rail telemetry feeds (Aktau, Baku) | Multi-signer / decentralized oracle network |
+| **Oracle** | ✅ Oracle key separate from the insurer, enforced on-chain | Port and rail telemetry feeds (Aktau, Baku) | Multi-signer / decentralized oracle network |
 | **Audit trail** | 🟡 cNFT logs simulated | Real State Compression (Bubblegum) | Every cargo event logged as a cNFT |
 | **Risk engine** | 🟡 Rule-based scoring on simulated telemetry | Historical dwell-time data from operator partners | Trained model prices premiums live |
 | **Regulatory** | 📄 AIFC Sandbox concept | AIFC Sandbox application | Licensed insurer partner |
@@ -248,6 +248,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
    ```bash
    cd oracle && netlify sites:create --name <your-oracle>
    netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   netlify env:set SILKSOL_ORACLE_SECRET "$(cat <separate-oracle-keypair>.json)"
    ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
    ```
 
@@ -326,12 +327,12 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог и подписывает данные оракула в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата (0.01 Devnet SOL вместо USDC). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог, **отдельный ключ оракула** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) подписывает данные о простое в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата. Программа сама следит за разделением ролей: отклоняет хранилище, где оракул совпадает со страховщиком, и не даёт страховщику забрать залог до конца срока покрытия (`coverage_end`) (0.01 Devnet SOL вместо USDC). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
 solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
-node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 ```
 
 ### 🛠 Технологии
@@ -349,7 +350,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Проверка | Результат |
 |---|---|
-| Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 пройдено** |
+| Тесты программы Solana (локальный валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **13 / 13 пройдено** |
 | E2E-набор на локальной сборке | ✅ **17 / 17 пройдено** |
 | E2E-набор на живом приложении ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 пройдено** |
 | Продакшн-сборка и проверка типов TypeScript | ✅ **Пройдено** |
@@ -404,8 +405,8 @@ npm run test:e2e:live             # на живом приложении silksol
 - **Caspian Risk Vault:** хранилище ликвидности в dApp (TVL, APY) — симуляция концепции следующей фазы, только для квалифицированных инвесторов по правилам МФЦА.
 
 **Известные ограничения MVP.**
-- Страховщик и оракул — один подписант (серверная функция). Оракул с несколькими подписантами есть в дорожной карте.
-- В хранилище пока нет `coverage_end`, поэтому страховщик может закрыть несработавшее хранилище до конца срока покрытия. План: запретить `close_vault` до окончания покрытия.
+- У страховщика и оракула разные ключи, и программа это проверяет (`OracleIsInsurer`), но оба ключа пока у одного оператора (SilkSol AI). Дальше: независимый оракул (поставщик данных порта и железной дороги), затем сеть оракулов с несколькими подписантами.
+- Покрытие в демо длится 7 дней (`coverage_end`). Хранилища, где залог заблокирован, но триггер не сработал, остаются открытыми до этого срока.
 - Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
 - Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
 - У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 выплат в час и 40 в день), чтобы казна в Devnet не опустела.
@@ -414,9 +415,9 @@ npm run test:e2e:live             # на живом приложении silksol
 
 | | Сейчас (MVP в Devnet) | Дальше | Продакшен |
 |---|---|---|---|
-| **Эскроу** | ✅ Anchor-программа работает в Devnet, 11 тестов программы | Ревью безопасности и аудит | Развёртывание в Mainnet |
+| **Эскроу** | ✅ Anchor-программа работает в Devnet, 13 тестов программы | Ревью безопасности и аудит | Развёртывание в Mainnet |
 | **Валюта выплат** | ✅ Devnet SOL вместо USDC | Эскроу-хранилища в SPL USDC | Двойные расчёты USDC + eKZT (песочница AIFC) |
-| **Оракул** | ✅ Один подписант-страховщик (серверная функция) | Телеметрия портов и железной дороги (Актау, Баку) | Несколько подписантов / децентрализованная сеть оракулов |
+| **Оракул** | ✅ Ключ оракула отдельно от страховщика, проверяется в программе | Телеметрия портов и железной дороги (Актау, Баку) | Несколько подписантов / децентрализованная сеть оракулов |
 | **Журнал аудита** | 🟡 Журнал cNFT симулируется | Настоящий State Compression (Bubblegum) | Каждое событие груза записывается как cNFT |
 | **Оценка риска** | 🟡 Скоринг по правилам на симулированной телеметрии | Исторические данные о простоях от операторов-партнёров | Обученная модель рассчитывает премии в реальном времени |
 | **Регулирование** | 📄 Концепция песочницы AIFC | Заявка в песочницу AIFC | Партнёр — лицензированный страховщик |
@@ -459,6 +460,7 @@ npm run test:e2e:live             # на живом приложении silksol
    ```bash
    cd oracle && netlify sites:create --name <your-oracle>
    netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   netlify env:set SILKSOL_ORACLE_SECRET "$(cat <separate-oracle-keypair>.json)"
    ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
    ```
 
@@ -537,12 +539,12 @@ SilkSol AI — телеметрияға негізделген тәуекел т
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұмыстағыдай бөлінеді: **SilkSol AI сақтандырушысының қазынасы** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) кепілді бұғаттайды және оракул деректеріне [серверлік функцияда](./oracle/netlify/functions/insurer.mts) қол қояды, ал **қосылған әмиян — төлемді алушы (beneficiary)** (USDC орнына 0.01 Devnet SOL). Әр транзакцияда SPL **Memo** бар (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), сондықтан Explorer-де операцияның мәні бірден көрінеді. cNFT журналы мен eKZT айырбасы әзірге симуляция. Сипаттама: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұмыстағыдай бөлінеді: **SilkSol AI сақтандырушысының қазынасы** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) кепілді бұғаттайды, **жеке оракул кілті** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) тұрып қалу деректеріне [серверлік функцияда](./oracle/netlify/functions/insurer.mts) қол қояды, ал **қосылған әмиян — төлемді алушы (beneficiary)** (USDC орнына 0.01 Devnet SOL). Рөлдердің бөлінуін бағдарламаның өзі тексереді: оракулы сақтандырушымен бірдей қойманы қабылдамайды және сақтандырушыға өтелім мерзімі (`coverage_end`) біткенге дейін кепілді қайтарып алуға жол бермейді. Әр транзакцияда SPL **Memo** бар (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), сондықтан Explorer-де операцияның мәні бірден көрінеді. cNFT журналы мен eKZT айырбасы әзірге симуляция. Сипаттама: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
 solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
-node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
+node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 ```
 
 ### 🛠 Технологиялар
@@ -560,7 +562,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 11 program tests
 
 | Тексеру | Нәтиже |
 |---|---|
-| Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **11 / 11 өтті** |
+| Solana бағдарламасының тесттері (жергілікті валидатор, [`anchor/tests`](./anchor/tests/silksol_escrow.test.ts)) | ✅ **13 / 13 өтті** |
 | Жергілікті құрастырмадағы E2E жиынтығы | ✅ **17 / 17 өтті** |
 | Тірі қосымшадағы E2E жиынтығы ([silksol.datariglab.kz](https://silksol.datariglab.kz/)) | ✅ **17 / 17 өтті** |
 | Продакшн құрастырма және TypeScript типтерін тексеру | ✅ **Өтті** |
@@ -615,8 +617,8 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **Caspian Risk Vault:** dApp-тағы өтімділік қоймасы (TVL, APY) — келесі кезең тұжырымдамасының симуляциясы, тек AIFC ережелері бойынша білікті инвесторларға арналған.
 
 **MVP-дің белгілі шектеулері.**
-- Сақтандырушы мен оракул — бір қол қоюшы (серверлік функция). Бірнеше қол қоюшысы бар оракул жол картасында бар.
-- Қоймада әзірге `coverage_end` жоқ, сондықтан сақтандырушы іске қосылмаған қойманы өтелім мерзімі біткенге дейін жаба алады. Жоспар: өтелім аяқталғанға дейін `close_vault` тыйым салу.
+- Сақтандырушы мен оракулдың кілттері бөлек және бағдарлама мұны тексереді (`OracleIsInsurer`), бірақ екі кілт те әзірге бір операторда (SilkSol AI). Келесі қадам: тәуелсіз оракул (порт пен теміржол деректерін жеткізуші), содан кейін бірнеше қол қоюшысы бар оракул желісі.
+- Демода өтелім 7 күнге созылады (`coverage_end`). Кепіл бұғатталған, бірақ триггер іске қосылмаған қоймалар осы мерзімге дейін ашық қалады.
 - Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
 - Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
 - Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 төлем), Devnet қазынасы таусылмауы үшін.
@@ -625,9 +627,9 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 
 | | Қазір (Devnet MVP) | Келесі қадам | Өндіріс |
 |---|---|---|---|
-| **Эскроу** | ✅ Anchor бағдарламасы Devnet-те жұмыс істейді, бағдарламаның 11 тесті | Қауіпсіздік шолуы және аудит | Mainnet-ке орналастыру |
+| **Эскроу** | ✅ Anchor бағдарламасы Devnet-те жұмыс істейді, бағдарламаның 13 тесті | Қауіпсіздік шолуы және аудит | Mainnet-ке орналастыру |
 | **Төлем валютасы** | ✅ USDC орнына Devnet SOL | SPL USDC эскроу қоймалары | USDC + eKZT қос есеп айырысу (AIFC құмсалғышы) |
-| **Оракул** | ✅ Бір сақтандырушы-қол қоюшы (серверлік функция) | Порт пен теміржол телеметриясы (Ақтау, Баку) | Бірнеше қол қоюшы / орталықсыздандырылған оракул желісі |
+| **Оракул** | ✅ Оракул кілті сақтандырушыдан бөлек, бағдарламада тексеріледі | Порт пен теміржол телеметриясы (Ақтау, Баку) | Бірнеше қол қоюшы / орталықсыздандырылған оракул желісі |
 | **Аудит журналы** | 🟡 cNFT журналы симуляция | Нақты State Compression (Bubblegum) | Жүктің әр оқиғасы cNFT ретінде жазылады |
 | **Тәуекелді бағалау** | 🟡 Симуляцияланған телеметрия бойынша ережеге негізделген скоринг | Серіктес операторлардан тұрып қалу уақытының тарихи деректері | Оқытылған модель сыйлықақыны нақты уақытта есептейді |
 | **Реттеу** | 📄 AIFC құмсалғышы тұжырымдамасы | AIFC құмсалғышына өтінім | Серіктес — лицензиясы бар сақтандырушы |
@@ -670,6 +672,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
    ```bash
    cd oracle && netlify sites:create --name <your-oracle>
    netlify env:set SILKSOL_TREASURY_SECRET "$(cat <devnet-treasury-keypair>.json)"
+   netlify env:set SILKSOL_ORACLE_SECRET "$(cat <separate-oracle-keypair>.json)"
    ./build.sh && netlify deploy --prod --no-build --dir public --functions dist-functions
    ```
 

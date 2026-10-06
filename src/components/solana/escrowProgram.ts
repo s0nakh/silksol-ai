@@ -3,9 +3,7 @@ import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
-  Transaction,
   TransactionInstruction,
-  type Connection,
 } from "@solana/web3.js";
 
 // Hand-encoded client for the `silksol_escrow` Anchor program (anchor/programs/silksol_escrow).
@@ -16,6 +14,8 @@ export const ESCROW_PROGRAM_ID = new PublicKey("Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmri
 
 export const DEMO_COLLATERAL_LAMPORTS = Math.round(0.01 * LAMPORTS_PER_SOL);
 export const TRIGGER_THRESHOLD_HOURS = 72;
+/** Demo cover period: telemetry is accepted, and collateral stays locked, for 7 days. */
+export const DEMO_COVERAGE_SECONDS = 7 * 24 * 3600;
 
 // Simulated oracle telemetry: port dwell time per demo cargo. The insurer/oracle reads it on the
 // server (the browser never chooses the number), so the on-chain trigger depends on the cargo.
@@ -25,7 +25,8 @@ export const SIMULATED_DWELL_HOURS: Record<string, number> = {
   "MCC-2048": 6, // moving through Khorgos
   "TRK-7782": 18, // routine handling at Baku Terminal
 };
-export const dwellHoursFor = (cargoId: string): number | undefined => SIMULATED_DWELL_HOURS[cargoId];
+export const dwellHoursFor = (cargoId: string): number | undefined =>
+  SIMULATED_DWELL_HOURS[cargoId];
 /** Mirrors the program's rule in `evaluate_trigger`: pay only when dwell_hours > threshold_hours. */
 export const triggerMet = (dwellHours: number) => dwellHours > TRIGGER_THRESHOLD_HOURS;
 
@@ -45,6 +46,11 @@ const u32 = (n: number) => {
 const u64 = (n: bigint) => {
   const b = Buffer.alloc(8);
   b.writeBigUInt64LE(n);
+  return b;
+};
+const i64 = (n: bigint) => {
+  const b = Buffer.alloc(8);
+  b.writeBigInt64LE(n);
   return b;
 };
 const str = (s: string) => {
@@ -69,6 +75,8 @@ type InitArgs = {
   thresholdHours: number;
   oracle: PublicKey;
   beneficiary: PublicKey;
+  /** Unix seconds; the program refuses telemetry after it and refuses to close an untriggered vault before it. */
+  coverageEnd: bigint;
 };
 
 export function initializeVaultIx(a: InitArgs, programId = ESCROW_PROGRAM_ID) {
@@ -87,6 +95,7 @@ export function initializeVaultIx(a: InitArgs, programId = ESCROW_PROGRAM_ID) {
       u32(a.thresholdHours),
       a.oracle.toBuffer(),
       a.beneficiary.toBuffer(),
+      i64(a.coverageEnd),
     ),
   });
 }
@@ -144,74 +153,6 @@ export function closeVaultIx(
     ],
     data: data("close_vault"),
   });
-}
-
-// --- Wallet flows used by the dashboard (wallet = insurer, oracle and beneficiary on Devnet) ---
-
-type WalletLike = {
-  publicKey: PublicKey | null;
-  sendTransaction: (tx: Transaction, connection: Connection) => Promise<string>;
-};
-
-async function sendAndConfirm(
-  wallet: WalletLike,
-  connection: Connection,
-  ...ixs: TransactionInstruction[]
-) {
-  if (!wallet.publicKey) throw new Error("Wallet not connected");
-  const latest = await connection.getLatestBlockhash("confirmed");
-  const tx = new Transaction({ feePayer: wallet.publicKey, ...latest }).add(...ixs);
-  const signature = await wallet.sendTransaction(tx, connection);
-  const res = await connection.confirmTransaction({ signature, ...latest }, "confirmed");
-  if (res.value.err) throw new Error(`Transaction failed: ${JSON.stringify(res.value.err)}`);
-  return signature;
-}
-
-/** Locks demo collateral in a fresh on-chain vault. Returns the tx signature and vault address. */
-export async function lockCollateralOnChain(
-  wallet: WalletLike,
-  connection: Connection,
-  shipmentId: string,
-) {
-  if (!wallet.publicKey) throw new Error("Wallet not connected");
-  const me = wallet.publicKey;
-  const policyId = BigInt(Date.now());
-  const ix = initializeVaultIx({
-    authority: me,
-    policyId,
-    shipmentId: shipmentId.slice(0, 32),
-    collateralLamports: DEMO_COLLATERAL_LAMPORTS,
-    thresholdHours: TRIGGER_THRESHOLD_HOURS,
-    oracle: me,
-    beneficiary: me,
-  });
-  const signature = await sendAndConfirm(wallet, connection, ix);
-  return { signature, vault: vaultPda(me, policyId).toBase58() };
-}
-
-/** Oracle reports a delay, the deterministic trigger fires and the vault pays out — one transaction. */
-export async function triggerAndSettleOnChain(
-  wallet: WalletLike,
-  connection: Connection,
-  vault: string,
-  dwellHours: number,
-  riskScore: number,
-) {
-  if (!wallet.publicKey) throw new Error("Wallet not connected");
-  const me = wallet.publicKey;
-  const v = new PublicKey(vault);
-  return sendAndConfirm(
-    wallet,
-    connection,
-    submitTelemetryIx(
-      me,
-      v,
-      dwellHours,
-      Math.max(0, Math.min(100, Math.round(riskScore))),
-    ),
-    evaluateTriggerIx(v),
-    settlePayoutIx(v, me),
-  );
 }
 
 export const explorerAddress = (a: string) =>

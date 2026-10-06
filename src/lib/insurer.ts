@@ -7,6 +7,7 @@ import {
 } from "@solana/web3.js";
 import {
   DEMO_COLLATERAL_LAMPORTS,
+  DEMO_COVERAGE_SECONDS,
   ESCROW_PROGRAM_ID,
   TRIGGER_THRESHOLD_HOURS,
   closeVaultIx,
@@ -20,9 +21,11 @@ import {
 } from "../components/solana/escrowProgram";
 import { lockMemo, memoIx, payoutMemo, reportHash } from "../components/solana/memo";
 
-// Server-side "insurer + oracle" for the Devnet demo. The treasury keypair funds each
-// policy vault and signs oracle telemetry, so the payout lands in the *user's* wallet
-// from a third party — exactly what a shipper would see in production.
+// Server-side insurer and oracle for the Devnet demo. Two separate keypairs:
+// - the insurer treasury funds each policy vault and pays fees;
+// - the oracle signs the dwell-time telemetry. The escrow program rejects a vault whose
+//   oracle is the insurer, so the party that pays can never attest its own claim.
+// The payout lands in the *user's* wallet from a third party, as a shipper would see in production.
 
 export type InsurerAction = "lock" | "settle" | "instant";
 export type InsurerRequest = {
@@ -70,7 +73,7 @@ async function overGlobalCap(connection: Connection, treasury: PublicKey) {
   return null;
 }
 
-export function parseTreasurySecret(secret: string | undefined) {
+export function parseKeypairSecret(secret: string | undefined) {
   if (!secret) return null;
   try {
     const bytes = JSON.parse(secret.trim()) as number[];
@@ -90,10 +93,15 @@ const fail = (
   message,
 });
 
-async function sendAndPoll(connection: Connection, payer: Keypair, ixs: TransactionInstruction[]) {
+// The first signer pays the fee (the insurer treasury).
+async function sendAndPoll(
+  connection: Connection,
+  signers: Keypair[],
+  ixs: TransactionInstruction[],
+) {
   const latest = await connection.getLatestBlockhash("confirmed");
-  const tx = new Transaction({ feePayer: payer.publicKey, ...latest }).add(...ixs);
-  tx.sign(payer);
+  const tx = new Transaction({ feePayer: signers[0]!.publicKey, ...latest }).add(...ixs);
+  tx.sign(...signers);
   const signature = await connection.sendRawTransaction(tx.serialize(), { maxRetries: 3 });
   // Poll instead of confirmTransaction(): that one opens a WebSocket, which serverless runtimes may not allow.
   for (let i = 0; i < 40; i++) {
@@ -110,11 +118,18 @@ async function sendAndPoll(connection: Connection, payer: Keypair, ixs: Transact
 
 export async function runInsurer(
   req: InsurerRequest,
-  secret: string | undefined,
+  secrets: { treasury: string | undefined; oracle: string | undefined },
   rpcUrl: string,
 ): Promise<InsurerResult> {
-  const treasury = parseTreasurySecret(secret);
+  const treasury = parseKeypairSecret(secrets.treasury);
   if (!treasury) return fail("not_configured", "SILKSOL_TREASURY_SECRET is not set on the server.");
+  const oracle = parseKeypairSecret(secrets.oracle);
+  if (!oracle || oracle.publicKey.equals(treasury.publicKey)) {
+    return fail(
+      "not_configured",
+      "SILKSOL_ORACLE_SECRET must be set to a key separate from the treasury.",
+    );
+  }
 
   let beneficiary: PublicKey;
   try {
@@ -128,7 +143,8 @@ export async function runInsurer(
   if (!cargoId) return fail("invalid_input", "Missing cargo id.");
   // The oracle reports its own telemetry for the cargo; the client cannot pick the delay.
   const dwellHours = dwellHoursFor(cargoId);
-  if (dwellHours === undefined) return fail("invalid_input", `No oracle telemetry for cargo #${cargoId}.`);
+  if (dwellHours === undefined)
+    return fail("invalid_input", `No oracle telemetry for cargo #${cargoId}.`);
   const risk = Math.max(0, Math.min(100, Math.round(Number(req.riskScore) || 0)));
 
   // Opening a vault spends treasury funds; throttle per wallet to keep the demo pool alive.
@@ -150,7 +166,10 @@ export async function runInsurer(
   if (req.action === "lock" || payingOut) {
     const cap = await overGlobalCap(connection, treasury.publicKey);
     if (cap)
-      return fail("rate_limited", `The demo insurer reached its ${cap} payout limit. Please try again later.`);
+      return fail(
+        "rate_limited",
+        `The demo insurer reached its ${cap} payout limit. Please try again later.`,
+      );
   }
 
   const me = treasury.publicKey;
@@ -165,8 +184,9 @@ export async function runInsurer(
       shipmentId: cargoId,
       collateralLamports: DEMO_COLLATERAL_LAMPORTS,
       thresholdHours: TRIGGER_THRESHOLD_HOURS,
-      oracle: me,
+      oracle: oracle.publicKey,
       beneficiary,
+      coverageEnd: BigInt(Math.floor(Date.now() / 1000) + DEMO_COVERAGE_SECONDS),
     }),
   ];
   const hash = await reportHash({
@@ -178,7 +198,7 @@ export async function runInsurer(
     riskScore: risk,
   });
   const settleIxs = [
-    submitTelemetryIx(me, vault, dwellHours, risk),
+    submitTelemetryIx(oracle.publicKey, vault, dwellHours, risk),
     evaluateTriggerIx(vault),
     settlePayoutIx(vault, beneficiary),
     // Return the vault's rent to the treasury; the payout itself stays with the beneficiary.
@@ -202,15 +222,17 @@ export async function runInsurer(
     }
   }
 
+  // The oracle co-signs only when its telemetry is in the transaction.
+  const signers = req.action === "lock" ? [treasury] : [treasury, oracle];
   if (req.action !== "lock" && !payingOut) {
     // Trigger not met: ask the escrow program itself (a simulation — nothing lands on-chain,
     // no fee, no funds move). It must refuse with NotEligible.
-    return refusal(connection, treasury, ixs, cargoId, dwellHours);
+    return refusal(connection, signers, ixs, cargoId, dwellHours);
   }
 
   try {
     if (req.action !== "settle") recent.set(beneficiary.toBase58(), Date.now());
-    const signature = await sendAndPoll(connection, treasury, ixs);
+    const signature = await sendAndPoll(connection, signers, ixs);
     return {
       ok: true,
       signature,
@@ -226,7 +248,7 @@ export async function runInsurer(
 
 async function refusal(
   connection: Connection,
-  payer: Keypair,
+  signers: Keypair[],
   ixs: TransactionInstruction[],
   cargoId: string,
   dwellHours: number,
@@ -234,8 +256,8 @@ async function refusal(
   const why = `Dwell ${dwellHours}h ≤ ${TRIGGER_THRESHOLD_HOURS}h threshold for cargo #${cargoId}`;
   try {
     const latest = await connection.getLatestBlockhash("confirmed");
-    const tx = new Transaction({ feePayer: payer.publicKey, ...latest }).add(...ixs);
-    tx.sign(payer);
+    const tx = new Transaction({ feePayer: signers[0]!.publicKey, ...latest }).add(...ixs);
+    tx.sign(...signers);
     const sim = await connection.simulateTransaction(tx);
     if (sim.value.logs?.some((l) => l.includes("NotEligible"))) {
       return fail(
@@ -243,7 +265,8 @@ async function refusal(
         `${why}: the escrow program refused the payout (NotEligible). Nothing was sent on-chain.`,
       );
     }
-    if (!sim.value.err) return fail("failed", "Unexpected: the program accepted an ineligible claim.");
+    if (!sim.value.err)
+      return fail("failed", "Unexpected: the program accepted an ineligible claim.");
     return fail("failed", `Simulation failed: ${JSON.stringify(sim.value.err)}`);
   } catch (e) {
     return fail("failed", e instanceof Error ? e.message : String(e));
