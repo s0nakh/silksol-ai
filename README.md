@@ -94,7 +94,7 @@ The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./an
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral, a **separate oracle key** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) signs the dwell-time telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout. The program enforces the split: it rejects a vault whose oracle is the insurer, and the insurer cannot reclaim collateral before the cover period (`coverage_end`) ends (0.01 Devnet SOL as a USDC stand-in). Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral, a **separate oracle key** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) signs the dwell-time telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). The program enforces the split: it rejects a vault whose oracle is the insurer, and the insurer cannot reclaim collateral before the cover period (`coverage_end`) ends. Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
@@ -111,12 +111,13 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 - **Risk Engine:** Predictive Risk Scoring Logic & Parametric Oracle Simulator
 - **Frontend & UI:** React, TypeScript, Tailwind CSS, Recharts
 - **Web3 Integration:** `@solana/web3.js`, `@solana/wallet-adapter-react`
+- **Insurer/oracle:** Netlify serverless function ([`oracle/`](./oracle))
 
 ---
 
 ## 🧪 Testing & E2E Validation
 
-### ✅ Verification status — all green (Oct 3, 2026)
+### ✅ Verification status — all green (Oct 6, 2026)
 
 | Check | Result |
 |---|---|
@@ -183,7 +184,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - Cover lasts 7 days in the demo (`coverage_end`). Vaults that were locked but never triggered stay open until then; [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) returns their collateral to the treasury afterwards.
 - Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
 - Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
-- The demo insurer is rate-limited (per wallet, plus 10 payouts per hour and 40 per day in total) to keep the Devnet treasury alive.
+- The demo insurer is rate-limited (per wallet, plus 10 treasury transactions per hour and 40 per day in total, locks and payouts combined) to keep the Devnet treasury alive.
 
 ---
 
@@ -236,7 +237,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
    ```bash
    cp .env.example .env
    # VITE_INSURER_URL points at the insurer/oracle Netlify Function (oracle/).
-   # Its treasury secret is set only in Netlify, never in git.
+   # Its treasury and oracle secrets are set only in Netlify, never in git.
    ```
 
 4. **Launch local server:**
@@ -327,12 +328,12 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог, **отдельный ключ оракула** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) подписывает данные о простое в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата. Программа сама следит за разделением ролей: отклоняет хранилище, где оракул совпадает со страховщиком, и не даёт страховщику забрать залог до конца срока покрытия (`coverage_end`) (0.01 Devnet SOL вместо USDC). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог, **отдельный ключ оракула** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) подписывает данные о простое в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата (0.01 Devnet SOL вместо USDC). Программа сама следит за разделением ролей: отклоняет хранилище, где оракул совпадает со страховщиком, и не даёт страховщику забрать залог до конца срока покрытия (`coverage_end`). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
 solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
-node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
+node --test --experimental-strip-types tests/*.test.ts   # 13 тестов программы
 ```
 
 ### 🛠 Технологии
@@ -346,7 +347,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 
 ### 🧪 Тестирование и E2E-проверка
 
-#### ✅ Статус проверки — всё зелёное (3 октября 2026)
+#### ✅ Статус проверки — всё зелёное (6 октября 2026)
 
 | Проверка | Результат |
 |---|---|
@@ -409,7 +410,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - Покрытие в демо длится 7 дней (`coverage_end`). Хранилища, где залог заблокирован, но триггер не сработал, остаются открытыми до этого срока; потом скрипт [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) возвращает залог в казну.
 - Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
 - Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
-- У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 выплат в час и 40 в день), чтобы казна в Devnet не опустела.
+- У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 транзакций казны в час и 40 в день — залоги и выплаты вместе), чтобы казна в Devnet не опустела.
 
 ### 🗺 Дорожная карта: от MVP в Devnet к продакшену
 
@@ -450,7 +451,7 @@ npm run test:e2e:live             # на живом приложении silksol
    ```bash
    cp .env.example .env
    # VITE_INSURER_URL указывает на функцию страховщика/оракула в Netlify (oracle/).
-   # Секрет казны хранится только в Netlify и никогда не попадает в git.
+   # Секреты казны и оракула хранятся только в Netlify и никогда не попадают в git.
    ```
 4. **Запустить локальный сервер:**
    ```bash
@@ -544,7 +545,7 @@ Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұм
 ```bash
 cd anchor && anchor build
 solana-test-validator --reset --bpf-program Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z target/deploy/silksol_escrow.so &
-node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
+node --test --experimental-strip-types tests/*.test.ts   # бағдарламаның 13 тесті
 ```
 
 ### 🛠 Технологиялар
@@ -558,7 +559,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 
 ### 🧪 Тестілеу және E2E тексеру
 
-#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 3 қазан)
+#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 6 қазан)
 
 | Тексеру | Нәтиже |
 |---|---|
@@ -621,7 +622,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - Демода өтелім 7 күнге созылады (`coverage_end`). Кепіл бұғатталған, бірақ триггер іске қосылмаған қоймалар осы мерзімге дейін ашық қалады; одан кейін [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) скрипті кепілді қазынаға қайтарады.
 - Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
 - Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
-- Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 төлем), Devnet қазынасы таусылмауы үшін.
+- Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 қазына транзакциясы — кепілдер мен төлемдер бірге), Devnet қазынасы таусылмауы үшін.
 
 ### 🗺 Жол картасы: Devnet MVP-ден өндіріске дейін
 
@@ -662,7 +663,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
    ```bash
    cp .env.example .env
    # VITE_INSURER_URL Netlify-дағы сақтандырушы/оракул функциясына сілтейді (oracle/).
-   # Қазына құпиясы тек Netlify-да сақталады және ешқашан git-ке түспейді.
+   # Қазына мен оракулдың құпиялары тек Netlify-да сақталады және ешқашан git-ке түспейді.
    ```
 4. **Жергілікті серверді іске қосу:**
    ```bash
