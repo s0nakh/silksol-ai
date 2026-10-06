@@ -1,0 +1,43 @@
+# Daily health check of the Devnet demo: insurer treasury balance, open escrow vaults, live dApp.
+# Read-only (no transactions). Sends the result to the maintainer's Telegram via repository secrets.
+name: Treasury monitor
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # 09:00 Asia/Aqtau
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check treasury and dApp, notify Telegram
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TREASURY: LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C
+          PROGRAM: Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z
+          RPC: https://api.devnet.solana.com
+        run: |
+          rpc() { curl -s -m 20 --retry 3 --retry-delay 10 "$RPC" -H 'Content-Type: application/json' -d "$1"; }
+          BAL=$(rpc '{"jsonrpc":"2.0","id":1,"method":"getBalance","params":["'"$TREASURY"'"]}' \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"]["value"] / 1e9)' 2>/dev/null || true)
+          VAULTS=$(rpc '{"jsonrpc":"2.0","id":1,"method":"getProgramAccounts","params":["'"$PROGRAM"'",{"encoding":"base64","dataSlice":{"offset":0,"length":0},"filters":[{"memcmp":{"offset":8,"bytes":"'"$TREASURY"'"}}]}]}' \
+            | python3 -c 'import json,sys; r=json.load(sys.stdin)["result"]; print("%d (%.4f SOL)" % (len(r), sum(a["account"]["lamports"] for a in r) / 1e9))' 2>/dev/null || echo "?")
+          SITE=$(curl -s -o /dev/null -m 20 --retry 2 -w '%{http_code}' https://silksol.datariglab.kz || true)
+          LOW=$(python3 -c "print(1 if '$BAL' and float('$BAL') < 1 else 0)" 2>/dev/null || echo 0)
+          if [ -z "$BAL" ]; then
+            MSG="🔴 SilkSol: Devnet RPC не ответил, баланс казны неизвестен. Сайт: $SITE"
+          elif [ "$LOW" = "1" ]; then
+            MSG=$(printf '🔴 СРОЧНО: казна SilkSol почти пуста — %s SOL\nПополни из Phantom (Devnet): %s\nили https://faucet.solana.com\nОткрытых хранилищ: %s · сайт: %s' "$BAL" "$TREASURY" "$VAULTS" "$SITE")
+          elif [ "$SITE" != "200" ]; then
+            MSG="🔴 SilkSol: сайт отвечает $SITE. Казна $BAL SOL, хранилищ $VAULTS"
+          else
+            MSG=$(printf '🟢 SilkSol: всё в порядке\nКазна: %s SOL\nОткрытых хранилищ: %s\nСайт: 200' "$BAL" "$VAULTS")
+          fi
+          echo "$MSG"
+          curl -s -m 20 "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TG_CHAT_ID}" --data-urlencode "text=${MSG}" | python3 -c 'import json,sys; sys.exit(0 if json.load(sys.stdin).get("ok") else 1)'
