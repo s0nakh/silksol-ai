@@ -182,6 +182,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 **Known limitations of the MVP.**
 - The insurer and the oracle are separate keys and the program enforces it (`OracleIsInsurer`), but both keys are still run by one operator (SilkSol AI). Next: an independent oracle (port/rail data provider), then a multi-signer oracle network.
 - Cover lasts 7 days in the demo (`coverage_end`). Vaults that were locked but never triggered stay open until then; [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) returns their collateral to the treasury afterwards.
+- The program is upgradeable on Devnet: the upgrade authority is the founder's key [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet), so whoever holds it could change the rules. Before Mainnet the upgrade authority moves to a multisig (e.g. Squads) with a time delay, and after an audit the program is frozen (no upgrade authority), so the rules a shipper buys cannot change under them.
 - Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
 - Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
 - The demo insurer is rate-limited (per wallet, plus 10 treasury transactions per hour and 40 per day in total, locks and payouts combined) to keep the Devnet treasury alive.
@@ -408,6 +409,7 @@ npm run test:e2e:live             # на живом приложении silksol
 **Известные ограничения MVP.**
 - У страховщика и оракула разные ключи, и программа это проверяет (`OracleIsInsurer`), но оба ключа пока у одного оператора (SilkSol AI). Дальше: независимый оракул (поставщик данных порта и железной дороги), затем сеть оракулов с несколькими подписантами.
 - Покрытие в демо длится 7 дней (`coverage_end`). Хранилища, где залог заблокирован, но триггер не сработал, остаются открытыми до этого срока; потом скрипт [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) возвращает залог в казну.
+- Программу в Devnet можно обновлять: право обновления у ключа основателя [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet), то есть владелец ключа может поменять правила. До Mainnet право обновления перейдёт к мультиподписи (например, Squads) с задержкой по времени, а после аудита программу заморозят (без права обновления), чтобы правила, по которым грузоотправитель купил полис, нельзя было поменять задним числом.
 - Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
 - Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
 - У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 транзакций казны в час и 40 в день — залоги и выплаты вместе), чтобы казна в Devnet не опустела.
@@ -620,6 +622,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 **MVP-дің белгілі шектеулері.**
 - Сақтандырушы мен оракулдың кілттері бөлек және бағдарлама мұны тексереді (`OracleIsInsurer`), бірақ екі кілт те әзірге бір операторда (SilkSol AI). Келесі қадам: тәуелсіз оракул (порт пен теміржол деректерін жеткізуші), содан кейін бірнеше қол қоюшысы бар оракул желісі.
 - Демода өтелім 7 күнге созылады (`coverage_end`). Кепіл бұғатталған, бірақ триггер іске қосылмаған қоймалар осы мерзімге дейін ашық қалады; одан кейін [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) скрипті кепілді қазынаға қайтарады.
+- Devnet-те бағдарламаны жаңартуға болады: жаңарту құқығы негізін қалаушының [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet) кілтінде, яғни кілт иесі ережелерді өзгерте алады. Mainnet-ке дейін жаңарту құқығы уақыт кідірісі бар мультиқолтаңбаға (мысалы, Squads) өтеді, ал аудиттен кейін бағдарлама қатырылады (жаңарту құқығынсыз), сондықтан жүк жөнелтуші сатып алған полистің ережелері кейін өзгермейді.
 - Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
 - Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
 - Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 қазына транзакциясы — кепілдер мен төлемдер бірге), Devnet қазынасы таусылмауы үшін.

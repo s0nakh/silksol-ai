@@ -76,6 +76,7 @@ The insurer and oracle run as a separate Netlify Function ([`oracle/`](../oracle
 
 - Both keys are held by one operator (SilkSol AI) in the MVP. The program already enforces separate roles; the next step is an independent oracle (port/rail data provider) and then a multi-signer oracle network.
 - Vaults that were locked but never triggered stay open until `coverage_end` (7 days in the demo); after that the insurer reclaims them with `close_vault` ([`oracle/reclaim-expired.ts`](../oracle/reclaim-expired.ts)).
+- The program is upgradeable on Devnet (upgrade authority `7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG`). Before Mainnet: a multisig upgrade authority with a time delay, then a frozen program after an audit.
 
 ## eKZT Off-Ramp Abstraction
 
