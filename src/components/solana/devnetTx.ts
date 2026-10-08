@@ -4,8 +4,9 @@ import { TREASURY_PUBKEY, memoIx, premiumMemo } from "./memo";
 
 export const PREMIUM_SOL = 0.001;
 
-export const EKZT_PER_USDC = 500;
-export const ekzt = (usdc: number) => `~${(usdc * EKZT_PER_USDC).toLocaleString()} eKZT`;
+/** Illustrative rate for showing a tenge equivalent. KZTE (tenge stablecoin on Solana) is a planned payout currency, not integrated. */
+export const KZT_PER_USDC = 500;
+export const kzte = (usdc: number) => `~${(usdc * KZT_PER_USDC).toLocaleString()} KZTE`;
 
 /** Shipper pays the policy premium (0.001 Devnet SOL) to the SilkSol insurer treasury, with a memo. */
 export async function sendPremium(

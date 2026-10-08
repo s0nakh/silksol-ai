@@ -32,7 +32,7 @@
 
 SilkSol AI is a B2B dApp MVP combining telemetry risk analytics with automated Solana smart contracts to demonstrate instant delay mitigation and dispute resolution along the Trans-Caspian International Transport Route (TMTM / Middle Corridor).
 
-Traditional supply chain insurance claims take 60–90+ days due to manual paperwork and dispute resolution. SilkSol AI demonstrates how verified telemetry feeds trigger automated, rule-based USDC payouts via non-custodial Solana Escrow Vaults, designed with a dual-currency eKZT (Digital Tenge) settlement abstraction layer for future AIFC regulatory sandbox compliance.
+Traditional supply chain insurance claims take 60–90+ days due to manual paperwork and dispute resolution. SilkSol AI demonstrates how verified telemetry feeds trigger automated, rule-based USDC payouts via non-custodial Solana Escrow Vaults, Payouts in [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte), the tenge stablecoin on Solana, are a planned direction to explore.
 
 ---
 
@@ -65,7 +65,7 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
  ║  • Compressed NFTs (cNFT): Immutable Freight Logs       ║
  ║  • Program Escrow Vault: Automated Collateralized USDC  ║
  ║  • Deterministic Settlement: Parametric Trigger Logic   ║
- ║  • eKZT Abstraction: AIFC Regulatory Off-Ramp Concept   ║
+ ║  • KZTE Payouts: Tenge Stablecoin (to be explored)      ║
  ╚═════════════════════════════════════════════════════════╝
                         │  (Web3 Wallet RPC / Program Logs)
                         ▼
@@ -83,7 +83,7 @@ Traditional supply chain insurance claims take 60–90+ days due to manual paper
 - **Status & Risk Indexing:** High-level tracking of transit checkpoints across Caspian ports (Aktau/Kuryk) and regional hubs.
 - **State Compression (cNFTs):** Cost-efficient storage of supply chain audit trails on Solana.
 - **Parametric Escrow Prototype:** Automated USDC payout triggers upon verified delay thresholds (`dwell_time > threshold`).
-- **Regulatory Sandbox Off-Ramp:** eKZT (Digital Tenge) settlement abstraction concept tailored for AIFC sandbox integration.
+- **Tenge payouts (planned):** KZTE, a tenge stablecoin on Solana, to be explored; the cover itself runs through a licensed insurer partner (target: AIFC sandbox).
 - **Zero Paperwork:** Instant, transparent, and verifiable event-driven settlement.
 
 ---
@@ -94,7 +94,7 @@ The parametric core runs on Solana as the Anchor program [`silksol_escrow`](./an
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral, a **separate oracle key** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) signs the dwell-time telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). The program enforces the split: it rejects a vault whose oracle is the insurer, and the insurer cannot reclaim collateral before the cover period (`coverage_end`) ends. Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs and eKZT conversion remain simulated. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+With Phantom/Solflare connected on Devnet, roles are split as in production: the **SilkSol AI insurer treasury** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) locks collateral, a **separate oracle key** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) signs the dwell-time telemetry in a [serverless function](./oracle/netlify/functions/insurer.mts), and the **connected wallet is the beneficiary** that receives the payout (0.01 Devnet SOL as a USDC stand-in). The program enforces the split: it rejects a vault whose oracle is the insurer, and the insurer cannot reclaim collateral before the cover period (`coverage_end`) ends. Every transaction carries an SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), so it is self-describing in Explorer. cNFT audit logs are simulated; KZTE amounts are shown for illustration only. Specs: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
@@ -107,7 +107,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 ## 🛠 Tech Stack
 
 - **Blockchain:** Solana Devnet, Anchor 1.2 escrow program (Rust), Compressed NFTs (cNFT / State Compression, simulated)
-- **Tokens & Escrow:** SPL-Token / Demo USDC, eKZT Settlement Abstraction
+- **Tokens & Escrow:** SPL-Token / Demo USDC, KZTE payouts (planned, to be explored)
 - **Risk Engine:** Predictive Risk Scoring Logic & Parametric Oracle Simulator
 - **Frontend & UI:** React, TypeScript, Tailwind CSS, Recharts
 - **Web3 Integration:** `@solana/web3.js`, `@solana/wallet-adapter-react`
@@ -139,7 +139,7 @@ A [Playwright](https://playwright.dev) suite (17 tests, [`e2e/dashboard.spec.ts`
 | **Dashboard & Telemetry** | Demo disclaimer, KPI metrics, Middle Corridor route stops, Aktau congestion alert, the selected cargo's oracle dwell time against the 72 h trigger. |
 | **Web3 Wallet (demo mode)** | Phantom / Solflare Devnet wallet menu and graceful fallback to simulated signatures. |
 | **Cargo Filters** | In Transit / High Risk Delay / Escrow Triggered filters isolate the right shipments. |
-| **Parametric Policy Lifecycle** | Issue → Lock Collateral & Sign → Trigger Oracle Event → Claim Paid Out (2,500 Demo USDC ≈ 1,250,000 eKZT); the trigger is refused for a cargo under 72 h; premium priced from the AI risk score. |
+| **Parametric Policy Lifecycle** | Issue → Lock Collateral & Sign → Trigger Oracle Event → Claim Paid Out (2,500 Demo USDC ≈ 1,250,000 KZTE, illustrative); the trigger is refused for a cargo under 72 h; premium = AI chance of delay at departure × payout + 25% loading. |
 | **Autonomous Settlement** | Review settlement acknowledges the 2,500 Demo USDC payout and settles the cargo selected in the table, not a fixed one; a cargo under the threshold gets no payout. |
 | **Caspian Risk Vault** | Demo USDC deposit updates stake; amounts above the wallet balance are rejected. |
 | **cNFT Audit Trail** | Each policy event is logged as a compressed Merkle checkpoint (leaf + root). |
@@ -159,7 +159,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 
 - **[Architecture Flow](./docs/ARCHITECTURE.md)** — end-to-end system design, data flow, and on-chain/off-chain boundaries.
 - **[Smart Contract Specs](./docs/CONTRACT_SPECS.md)** — Escrow Vault program accounts, instructions, and settlement trigger logic.
-- **[AIFC Sandbox Regulatory Notes](./docs/AIFC_SANDBOX.md)** — eKZT off-ramp compliance concept for the AIFC regulatory sandbox.
+- **[AIFC Sandbox Regulatory Notes](./docs/AIFC_SANDBOX.md)** — regulatory concept for the AIFC sandbox and planned KZTE payouts.
 - **[Presentation (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — pitch deck on Google Drive.
 
 ---
@@ -172,7 +172,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **Argus** freight assessment (Sept 2026): Xi'an → Tbilisi/Poti **$6,900–7,200 per 40HC**, Xi'an → Alat/Baku $6,750–7,200 per 40HC. [Trend.az summary](https://www.trend.az/casia/kazakhstan/4229949.html)
 - **TITR / Ministry of Transport of Kazakhstan**: Middle Corridor volumes grew from 0.8 to **~4.5 million tonnes a year**. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
-**Global Web3 benchmarks.** Parametric cover on-chain is proven in other verticals: **Etherisc** (flight-delay and crop insurance), **Arbol** (parametric weather cover), **Nayms** (regulated on-chain insurance marketplace). SilkSol AI applies the same model to a corridor nobody covers: Caspian port dwell times (Aktau, Kuryk, Baku), with AIFC / eKZT settlement built in.
+**Global Web3 benchmarks.** Parametric cover on-chain is proven in other verticals: **Etherisc** (flight-delay and crop insurance), **Arbol** (parametric weather cover), **Nayms** (regulated on-chain insurance marketplace). SilkSol AI applies the same model to a corridor nobody covers: Caspian port dwell times (Aktau, Kuryk, Baku), with an AIFC sandbox path and tenge (KZTE) payouts planned.
 
 **Business model & risk capital.**
 - **Who pays:** freight forwarders and shippers pay a premium per cargo, priced by the risk score.
@@ -184,9 +184,27 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - Cover lasts 7 days in the demo (`coverage_end`). Vaults that were locked but never triggered stay open until then; [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) returns their collateral to the treasury afterwards.
 - The program is upgradeable on Devnet: the upgrade authority is the founder's key [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet), so whoever holds it could change the rules. Before Mainnet the upgrade authority moves to a multisig (e.g. Squads) with a time delay, and after an audit the program is frozen (no upgrade authority), so the rules a shipper buys cannot change under them.
 - Dwell times are simulated per demo cargo (#JOL-8921 96 h, #KZL-4107 110 h, #MCC-2048 6 h, #TRK-7782 18 h). The oracle reads them on the server; the browser cannot choose them.
-- Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs and eKZT conversion are simulated.
+- Payouts use Devnet SOL as a USDC stand-in; cNFT audit logs are simulated; KZTE amounts are illustrative.
 - The demo insurer is rate-limited (per wallet, plus 10 treasury transactions per hour and 40 per day in total, locks and payouts combined) to keep the Devnet treasury alive.
 - A daily health check ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), Netlify scheduled function, 09:00 Aqtau) reads the treasury balance, open escrow vaults and the live dApp, and sends a 🟢/🔴 report to the maintainer's Telegram; below 1 SOL it raises an urgent top-up alert. Read-only: it holds no keys.
+
+---
+
+## 🧮 Pricing, basis risk & oracle trust
+
+<p align="center"><img src="./assets/pricing-flow-en.svg" alt="How SilkSol AI prices a policy and settles a claim: 20% × 2,500 + 25% loading = 625 premium; dwell over 72 h pays 2,500, otherwise no payout" width="640"/></p>
+
+**How the premium is priced.** At departure the AI forecasts the chance that the cargo's port dwell will exceed 72 h. Premium = chance × payout + 25% insurer loading (expenses, capital, profit). For #JOL-8921: 20% × 2,500 = 500 expected loss, plus 25% = **625 Demo USDC**. The live "AI risk" in the dashboard (68% for #JOL-8921 today) is the risk after the cargo got stuck, and cover is never priced on it: nobody can cheaply insure a house that is already on fire. Code: [`premiumFor`](./src/components/solana/PolicyEngine.tsx). The payout stays a plain on-chain rule (`dwell_time > threshold`); the AI never decides a claim.
+
+**Known weak spots of parametric cover and how we handle them**
+
+| Risk | Example | How SilkSol AI handles it | Status |
+|---|---|---|---|
+| **Payout without a loss** | Cargo dwelled 73 h, the shipper lost nothing | Sold as cover for frozen cash, not as cargo insurance. The shipper sets the payout from their own cost of delay (demurrage, financing, penalties). Each policy is tied to a real shipment (bill of lading) and capped at its declared value. | 📄 policy terms |
+| **Loss without a payout** | 70 h dwell, a contract was lost, no payout | Tiered payout instead of a cliff (e.g. 48–72 h 25%, 72–96 h 50%, over 96 h 100%) and a threshold the client chooses (48 / 72 / 96 h; a lower threshold costs more, priced by the same AI). SilkSol is a fast top-up next to classic cargo insurance, which still covers large losses. | 📄 next: tiers in the escrow program |
+| **Who vouches for the number** | Insurer and data source are the same party | Today the oracle key is separate from the insurer and the program enforces it (`OracleIsInsurer`); every payout carries the report hash in its memo. Next: independent data (public AIS positions of Caspian ferries at Aktau and Baku, then port and rail feeds), 2-of-3 oracle signatures, and a 24 h dispute window before payout. | ✅ split keys · 📄 rest |
+
+✅ in code · 📄 planned
 
 ---
 
@@ -195,7 +213,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 | | Today (Devnet MVP) | Next | Production |
 |---|---|---|---|
 | **Escrow** | ✅ Anchor program live on Devnet, 13 program tests | Security review and audit | Mainnet deployment |
-| **Payout currency** | ✅ Devnet SOL as a USDC stand-in | SPL USDC escrow vaults | USDC + eKZT dual settlement (AIFC Sandbox) |
+| **Payout currency** | ✅ Devnet SOL as a USDC stand-in | SPL USDC escrow vaults | USDC, then KZTE payouts (to be explored) |
 | **Oracle** | ✅ Oracle key separate from the insurer, enforced on-chain | Port and rail telemetry feeds (Aktau, Baku) | Multi-signer / decentralized oracle network |
 | **Audit trail** | 🟡 cNFT logs simulated | Real State Compression (Bubblegum) | Every cargo event logged as a cNFT |
 | **Risk engine** | 🟡 Rule-based scoring on simulated telemetry | Historical dwell-time data from operator partners | Trained model prices premiums live |
@@ -212,7 +230,7 @@ npm run test:e2e:live             # against the live dApp at silksol.datariglab.
 - **MVP Data & Telemetry:** This public repository is an interactive hackathon MVP. All telemetry streams, risk metrics, and oracle events utilize synthetic/simulated data to demonstrate the automated workflow without requiring live hardware sensors.
 - **Deterministic Triggers:** AI/ML components represent predictive risk scoring logic; payout triggers are strictly deterministic rule-based smart contracts (`dwell_time > threshold`).
 - **IP Protection:** The production risk-scoring logic and future model parameters will remain confidential assets of SilkSol AI. This public MVP uses a simplified rule-based scorer on simulated data (see [Roadmap](#-roadmap-from-devnet-mvp-to-production)).
-- **Regulatory Roadmap:** The eKZT / Digital Tenge integration represents a structural proposal for future testing within the AIFC regulatory sandbox environment.
+- **Regulatory Roadmap:** Tenge payouts in [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte) (a tenge stablecoin on Solana, piloted in the National Bank of Kazakhstan's sandbox) are a direction to explore, not an integration. The digital tenge (eKZT) runs on the National Bank's own platform, not on Solana, so it is not the target. Selling cover requires a licensed insurer partner (target: AIFC sandbox).
 
 ---
 
@@ -276,7 +294,7 @@ Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
 
 SilkSol AI — MVP B2B-приложения (dApp), которое объединяет аналитику рисков на основе телеметрии с автоматическими смарт-контрактами Solana. Оно показывает, как можно мгновенно компенсировать задержки грузов и разрешать споры на Транскаспийском международном транспортном маршруте (ТМТМ / Средний коридор).
 
-Классические страховые выплаты в цепочках поставок занимают 60–90+ дней из-за ручного документооборота и споров. SilkSol AI показывает, как проверенные данные телеметрии запускают автоматические выплаты в USDC по строгим правилам через некастодиальные эскроу-хранилища Solana. Решение изначально рассчитано на двухвалютный слой расчётов с eKZT (цифровым тенге) для будущей работы в регуляторной песочнице AIFC (МФЦА).
+Классические страховые выплаты в цепочках поставок занимают 60–90+ дней из-за ручного документооборота и споров. SilkSol AI показывает, как проверенные данные телеметрии запускают автоматические выплаты в USDC по строгим правилам через некастодиальные эскроу-хранилища Solana. В планах изучить выплаты в [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte), тенговом стейблкоине на Solana.
 
 ### 🧑‍⚖️ Попробовать за 2 минуты (для судей)
 
@@ -305,7 +323,7 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
  ║  • Сжатые NFT (cNFT): неизменяемые журналы перевозок    ║
  ║  • Эскроу-хранилище: автоматический залог в USDC        ║
  ║  • Детерминированная выплата: параметрический триггер   ║
- ║  • Абстракция eKZT: концепция вывода в песочнице AIFC   ║
+ ║  • Выплаты в KZTE: тенговый стейблкоин (изучим)         ║
  ╚═════════════════════════════════════════════════════════╝
                         │  (RPC кошелька Web3 / логи программы)
                         ▼
@@ -321,7 +339,7 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 - **Статусы и индексация рисков:** отслеживание транзитных точек в каспийских портах (Актау/Курык) и региональных хабах.
 - **Сжатие состояния (cNFT):** недорогое хранение журналов аудита цепочки поставок в Solana.
 - **Прототип параметрического эскроу:** автоматическая выплата в USDC при подтверждённом превышении порога задержки (`dwell_time > threshold`).
-- **Выход через регуляторную песочницу:** концепция расчётов в eKZT (цифровом тенге) для интеграции с песочницей AIFC.
+- **Выплаты в тенге (в планах):** KZTE, тенговый стейблкоин на Solana, планируем изучить; само страхование идёт через лицензированного страховщика-партнёра (цель: песочница AIFC).
 - **Ноль бумаг:** мгновенные, прозрачные и проверяемые выплаты по событию.
 
 ### ⛓ Эскроу-программа в блокчейне (Devnet)
@@ -330,7 +348,7 @@ SilkSol AI — MVP B2B-приложения (dApp), которое объеди�
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог, **отдельный ключ оракула** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) подписывает данные о простое в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата (0.01 Devnet SOL вместо USDC). Программа сама следит за разделением ролей: отклоняет хранилище, где оракул совпадает со страховщиком, и не даёт страховщику забрать залог до конца срока покрытия (`coverage_end`). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT и конвертация в eKZT пока симулируются. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+При подключённом Phantom/Solflare в Devnet роли разделены, как в реальной работе: **казна страховщика SilkSol AI** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) блокирует залог, **отдельный ключ оракула** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) подписывает данные о простое в [серверной функции](./oracle/netlify/functions/insurer.mts), а **подключённый кошелёк — получатель (beneficiary)**, которому приходит выплата (0.01 Devnet SOL вместо USDC). Программа сама следит за разделением ролей: отклоняет хранилище, где оракул совпадает со страховщиком, и не даёт страховщику забрать залог до конца срока покрытия (`coverage_end`). В каждой транзакции есть SPL **Memo** (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), поэтому в Explorer сразу видно, что это за операция. Журнал cNFT пока симулируется; суммы в KZTE показаны только для примера. Спецификация: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
@@ -341,7 +359,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 тестов пр�
 ### 🛠 Технологии
 
 - **Блокчейн:** Solana Devnet, эскроу-программа на Anchor 1.2 (Rust), сжатые NFT (cNFT / State Compression, симуляция)
-- **Токены и эскроу:** SPL-Token / Demo USDC, абстракция расчётов в eKZT
+- **Токены и эскроу:** SPL-Token / Demo USDC, выплаты в KZTE (в планах изучить)
 - **Движок рисков:** логика предиктивного скоринга и симулятор параметрического оракула
 - **Фронтенд и UI:** React, TypeScript, Tailwind CSS, Recharts
 - **Web3-интеграция:** `@solana/web3.js`, `@solana/wallet-adapter-react`
@@ -371,7 +389,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 тестов пр�
 | **Дашборд и телеметрия** | Демо-предупреждение, KPI, точки маршрута Среднего коридора, оповещение о заторе в Актау, простой выбранного груза по данным оракула против триггера 72 ч. |
 | **Web3-кошелёк (демо-режим)** | Меню кошельков Phantom / Solflare для Devnet и корректный переход к симулированным подписям. |
 | **Фильтры грузов** | Фильтры In Transit / High Risk Delay / Escrow Triggered показывают нужные грузы. |
-| **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 eKZT); отказ триггера для груза с простоем меньше 72 ч; премия рассчитывается по ИИ-оценке риска. |
+| **Жизненный цикл полиса** | Выпуск → блокировка залога → событие оракула → выплата (2 500 Demo USDC ≈ 1 250 000 KZTE, для примера); отказ триггера для груза с простоем меньше 72 ч; премия = шанс задержки по прогнозу ИИ при отправке × выплата + 25% надбавки. |
 | **Автономная выплата** | Review settlement подтверждает выплату 2 500 Demo USDC и проводит её именно по грузу, выбранному в таблице; груз ниже порога выплату не получает. |
 | **Caspian Risk Vault** | Депозит Demo USDC обновляет долю; суммы больше баланса отклоняются. |
 | **Журнал cNFT** | Каждое событие полиса записывается как сжатая контрольная точка Merkle (лист + корень). |
@@ -389,7 +407,7 @@ npm run test:e2e:live             # на живом приложении silksol
 
 - **[Архитектура](./docs/ARCHITECTURE.md)** — устройство системы, потоки данных, граница между блокчейном и офчейном.
 - **[Спецификация смарт-контракта](./docs/CONTRACT_SPECS.md)** — аккаунты, инструкции и логика триггера эскроу-программы.
-- **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — концепция вывода в eKZT в регуляторной песочнице AIFC.
+- **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — регуляторная концепция для песочницы AIFC и планы по выплатам в KZTE.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — питч-дек на Google Drive.
 
 ### 📊 Рынок, источники и позиционирование
@@ -400,7 +418,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - Ценовое агентство **Argus** (сентябрь 2026): Сиань → Тбилиси/Поти **$6 900–7 200 за 40HC**, Сиань → Алят/Баку $6 750–7 200 за 40HC. [Обзор Trend.az](https://www.trend.az/casia/kazakhstan/4229949.html)
 - **ТМТМ / Министерство транспорта РК**: объём перевозок по Среднему коридору вырос с 0,8 до **~4,5 млн тонн в год**. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
-**Глобальные Web3-бенчмарки.** Параметрическое страхование в блокчейне уже работает в других отраслях: **Etherisc** (задержки авиарейсов и агрориски), **Arbol** (погодные параметрические покрытия), **Nayms** (регулируемый on-chain рынок страхования). SilkSol AI применяет ту же модель к коридору, который никто не покрывает: простои в каспийских портах (Актау, Курык, Баку), с расчётами через МФЦА / eKZT.
+**Глобальные Web3-бенчмарки.** Параметрическое страхование в блокчейне уже работает в других отраслях: **Etherisc** (задержки авиарейсов и агрориски), **Arbol** (погодные параметрические покрытия), **Nayms** (регулируемый on-chain рынок страхования). SilkSol AI применяет ту же модель к коридору, который никто не покрывает: простои в каспийских портах (Актау, Курык, Баку), с путём через песочницу МФЦА и планами по выплатам в тенге (KZTE).
 
 **Бизнес-модель и страховой капитал.**
 - **Кто платит:** экспедиторы и грузоотправители платят премию за каждый груз, её размер зависит от оценки риска.
@@ -412,16 +430,32 @@ npm run test:e2e:live             # на живом приложении silksol
 - Покрытие в демо длится 7 дней (`coverage_end`). Хранилища, где залог заблокирован, но триггер не сработал, остаются открытыми до этого срока; потом скрипт [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) возвращает залог в казну.
 - Программу в Devnet можно обновлять: право обновления у ключа основателя [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet), то есть владелец ключа может поменять правила. До Mainnet право обновления перейдёт к мультиподписи (например, Squads) с задержкой по времени, а после аудита программу заморозят (без права обновления), чтобы правила, по которым грузоотправитель купил полис, нельзя было поменять задним числом.
 - Простой симулирован для каждого демо-груза (#JOL-8921 96 ч, #KZL-4107 110 ч, #MCC-2048 6 ч, #TRK-7782 18 ч). Оракул берёт эти данные на сервере; браузер не может их подменить.
-- Выплаты идут в Devnet SOL вместо USDC; журнал cNFT и конвертация в eKZT симулируются.
+- Выплаты идут в Devnet SOL вместо USDC; журнал cNFT симулируется; суммы в KZTE для примера.
 - У демо-страховщика есть лимиты (на кошелёк, плюс всего 10 транзакций казны в час и 40 в день — залоги и выплаты вместе), чтобы казна в Devnet не опустела.
 - Ежедневная проверка ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), запланированная функция Netlify, 09:00 по Актау) смотрит баланс казны, открытые хранилища и живое приложение и шлёт 🟢/🔴 отчёт мейнтейнеру в Telegram; если в казне меньше 1 SOL — срочное оповещение о пополнении. Только чтение: ключей у неё нет.
+
+### 🧮 Цена полиса, базисный риск и доверие к оракулу
+
+<p align="center"><img src="./assets/pricing-flow-ru.svg" alt="Как SilkSol AI считает цену полиса и выплату: 20% × 2 500 + 25% = 625; простой больше 72 ч — выплата 2 500, иначе выплаты нет" width="640"/></p>
+
+**Как считается цена полиса.** При отправке груза ИИ прогнозирует шанс, что простой в порту будет больше 72 ч. Цена = шанс × выплата + 25% надбавки страховщика (расходы, капитал, прибыль). Для #JOL-8921: 20% × 2 500 = 500 ожидаемого убытка, плюс 25% = **625 Demo USDC**. «AI risk» на дашборде (68% у #JOL-8921 сейчас) — это риск уже после того, как груз застрял, и цену по нему не считают: нельзя дёшево застраховать дом, который уже горит. Код: [`premiumFor`](./src/components/solana/PolicyEngine.tsx). Выплата остаётся простым правилом в блокчейне (`dwell_time > threshold`), ИИ не решает, платить или нет.
+
+**Слабые места параметрической страховки и что мы с ними делаем**
+
+| Риск | Пример | Как решает SilkSol AI | Статус |
+|---|---|---|---|
+| **Выплата без убытка** | Груз простоял 73 ч, экспедитор ничего не потерял | Продукт — защита от замороженных денег, а не страховка груза. Экспедитор сам выбирает сумму выплаты по своим расходам на простой (штрафы за контейнер, кредит, неустойки). Полис привязан к реальной перевозке (накладной), а сумма не больше заявленной стоимости. | 📄 условия полиса |
+| **Убыток без выплаты** | Простой 70 ч, контракт сорван, выплаты нет | Ступенчатая выплата вместо обрыва (например, 48–72 ч — 25%, 72–96 ч — 50%, больше 96 ч — 100%) и порог на выбор клиента (48 / 72 / 96 ч; ниже порог — дороже полис, цену считает тот же ИИ). SilkSol — быстрые деньги в дополнение к классической страховке груза, которая покрывает крупные убытки. | 📄 далее: ступени в эскроу-программе |
+| **Кто гарантирует число** | Страховщик и источник данных — одно лицо | Уже сейчас ключ оракула отделён от страховщика, и программа это проверяет (`OracleIsInsurer`); в memo каждой выплаты есть хэш отчёта. Далее: независимые данные (открытые AIS-сигналы каспийских паромов в Актау и Баку, затем данные порта и железной дороги), подписи 2 из 3 оракулов и 24 часа на спор до выплаты. | ✅ раздельные ключи · 📄 остальное |
+
+✅ в коде · 📄 в планах
 
 ### 🗺 Дорожная карта: от MVP в Devnet к продакшену
 
 | | Сейчас (MVP в Devnet) | Дальше | Продакшен |
 |---|---|---|---|
 | **Эскроу** | ✅ Anchor-программа работает в Devnet, 13 тестов программы | Ревью безопасности и аудит | Развёртывание в Mainnet |
-| **Валюта выплат** | ✅ Devnet SOL вместо USDC | Эскроу-хранилища в SPL USDC | Двойные расчёты USDC + eKZT (песочница AIFC) |
+| **Валюта выплат** | ✅ Devnet SOL вместо USDC | Эскроу-хранилища в SPL USDC | USDC, затем выплаты в KZTE (изучим) |
 | **Оракул** | ✅ Ключ оракула отдельно от страховщика, проверяется в программе | Телеметрия портов и железной дороги (Актау, Баку) | Несколько подписантов / децентрализованная сеть оракулов |
 | **Журнал аудита** | 🟡 Журнал cNFT симулируется | Настоящий State Compression (Bubblegum) | Каждое событие груза записывается как cNFT |
 | **Оценка риска** | 🟡 Скоринг по правилам на симулированной телеметрии | Исторические данные о простоях от операторов-партнёров | Обученная модель рассчитывает премии в реальном времени |
@@ -436,7 +470,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - **Данные и телеметрия MVP:** этот публичный репозиторий — интерактивный MVP для хакатона. Вся телеметрия, метрики рисков и события оракула основаны на синтетических/симулированных данных, чтобы показать автоматический процесс без реальных датчиков.
 - **Детерминированные триггеры:** ИИ/ML отвечает за предиктивную оценку риска; решение о выплате принимает смарт-контракт по строгому правилу (`dwell_time > threshold`).
 - **Защита ИС:** логика скоринга риска для продакшена и параметры будущих моделей останутся конфиденциальными активами SilkSol AI. В этом публичном MVP используется упрощённый скоринг по правилам на симулированных данных (см. дорожную карту выше).
-- **Регуляторная дорожная карта:** интеграция eKZT / цифрового тенге — структурное предложение для будущего тестирования в регуляторной песочнице AIFC.
+- **Регуляторная дорожная карта:** выплаты в [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte) (тенговый стейблкоин на Solana, пилот в песочнице Нацбанка РК) — направление для изучения, а не готовая интеграция. Цифровой тенге (eKZT) работает на платформе Нацбанка, а не на Solana, поэтому он не цель. Для продажи полисов нужен лицензированный страховщик-партнёр (цель: песочница AIFC).
 
 ### 🚀 Локальный запуск
 
@@ -490,7 +524,7 @@ Copyright © 2026 **SilkSol AI / s0nakh**. Все права защищены.
 
 SilkSol AI — телеметрияға негізделген тәуекел талдауын Solana-ның автоматты смарт-келісімшарттарымен біріктіретін B2B қосымшасының (dApp) MVP нұсқасы. Ол Транскаспий халықаралық көлік бағытында (ТХКБ / Орта дәліз) жүк кешігуінің өтемін лезде төлеуге және дауларды шешуге болатынын көрсетеді.
 
-Жеткізу тізбегіндегі дәстүрлі сақтандыру төлемдері қолмен жүргізілетін құжаттар мен даулардың салдарынан 60–90+ күнге созылады. SilkSol AI тексерілген телеметрия деректері Solana-ның кастодиалды емес эскроу қоймалары арқылы қатаң ережеге негізделген USDC төлемдерін қалай автоматты түрде іске қосатынын көрсетеді. Шешім болашақта AIFC (АХҚО) реттеушілік құмсалғышында жұмыс істеу үшін eKZT (цифрлық теңге) арқылы екі валюталы есеп айырысу қабатына бастан есептелген.
+Жеткізу тізбегіндегі дәстүрлі сақтандыру төлемдері қолмен жүргізілетін құжаттар мен даулардың салдарынан 60–90+ күнге созылады. SilkSol AI тексерілген телеметрия деректері Solana-ның кастодиалды емес эскроу қоймалары арқылы қатаң ережеге негізделген USDC төлемдерін қалай автоматты түрде іске қосатынын көрсетеді. Жоспарда Solana-дағы теңге стейблкоині [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte) арқылы төлемдерді зерттеу бар.
 
 ### 🧑‍⚖️ 2 минутта байқап көріңіз (төрешілерге)
 
@@ -519,7 +553,7 @@ SilkSol AI — телеметрияға негізделген тәуекел т
  ║  • Сығылған NFT (cNFT): өзгермейтін тасымал журналдары  ║
  ║  • Эскроу қоймасы: USDC-дегі автоматты кепіл            ║
  ║  • Детерминирленген төлем: параметрлік триггер          ║
- ║  • eKZT абстракциясы: AIFC құмсалғышы тұжырымы          ║
+ ║  • KZTE төлемдері: теңге стейблкоині (зерттейміз)       ║
  ╚═════════════════════════════════════════════════════════╝
                         │  (Web3 әмиян RPC / бағдарлама логтары)
                         ▼
@@ -535,7 +569,7 @@ SilkSol AI — телеметрияға негізделген тәуекел т
 - **Мәртебе және тәуекел индексі:** Каспий порттарындағы (Ақтау/Құрық) және аймақтық хабтардағы транзит нүктелерін бақылау.
 - **Күйді сығу (cNFT):** жеткізу тізбегінің аудит журналдарын Solana-да арзан сақтау.
 - **Параметрлік эскроу прототипі:** кешігу шегінен асқаны расталғанда USDC-мен автоматты төлем (`dwell_time > threshold`).
-- **Реттеушілік құмсалғыш арқылы шығу:** AIFC құмсалғышымен интеграцияға арналған eKZT (цифрлық теңге) есеп айырысу тұжырымдамасы.
+- **Теңгемен төлем (жоспарда):** Solana-дағы теңге стейблкоині KZTE-ні зерттейміз; сақтандырудың өзі лицензиясы бар серіктес сақтандырушы арқылы жүреді (мақсат: AIFC құмсалғышы).
 - **Қағазсыз:** оқиғаға негізделген лезде, ашық және тексерілетін төлем.
 
 ### ⛓ Блокчейндегі эскроу бағдарламасы (Devnet)
@@ -544,7 +578,7 @@ SilkSol AI — телеметрияға негізделген тәуекел т
 
 `initialize_vault` → `submit_telemetry` → `evaluate_trigger` (`dwell_time > threshold`) → `settle_payout` → `close_vault`
 
-Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұмыстағыдай бөлінеді: **SilkSol AI сақтандырушысының қазынасы** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) кепілді бұғаттайды, **жеке оракул кілті** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) тұрып қалу деректеріне [серверлік функцияда](./oracle/netlify/functions/insurer.mts) қол қояды, ал **қосылған әмиян — төлемді алушы (beneficiary)** (USDC орнына 0.01 Devnet SOL). Рөлдердің бөлінуін бағдарламаның өзі тексереді: оракулы сақтандырушымен бірдей қойманы қабылдамайды және сақтандырушыға өтелім мерзімі (`coverage_end`) біткенге дейін кепілді қайтарып алуға жол бермейді. Әр транзакцияда SPL **Memo** бар (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), сондықтан Explorer-де операцияның мәні бірден көрінеді. cNFT журналы мен eKZT айырбасы әзірге симуляция. Сипаттама: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
+Devnet-те Phantom/Solflare қосылғанда рөлдер нақты жұмыстағыдай бөлінеді: **SilkSol AI сақтандырушысының қазынасы** ([`LxtEpBFN…mv7C`](https://explorer.solana.com/address/LxtEpBFNvEEBmESNA6ExiYHdrdZCfNGkCbndLVimv7C?cluster=devnet)) кепілді бұғаттайды, **жеке оракул кілті** ([`GKu4Dmw4…6RDe`](https://explorer.solana.com/address/GKu4Dmw4TkKu2WJNX7weQrMw7AjjmrHtovxFrX7E6RDe?cluster=devnet)) тұрып қалу деректеріне [серверлік функцияда](./oracle/netlify/functions/insurer.mts) қол қояды, ал **қосылған әмиян — төлемді алушы (beneficiary)** (USDC орнына 0.01 Devnet SOL). Рөлдердің бөлінуін бағдарламаның өзі тексереді: оракулы сақтандырушымен бірдей қойманы қабылдамайды және сақтандырушыға өтелім мерзімі (`coverage_end`) біткенге дейін кепілді қайтарып алуға жол бермейді. Әр транзакцияда SPL **Memo** бар (`SilkSol AI | Parametric payout | Cargo #… | Delay 96h > 72h | Policy … | Report sha256:…`), сондықтан Explorer-де операцияның мәні бірден көрінеді. cNFT журналы әзірге симуляция; KZTE сомалары тек мысал ретінде көрсетілген. Сипаттама: [CONTRACT_SPECS.md](./docs/CONTRACT_SPECS.md).
 
 ```bash
 cd anchor && anchor build
@@ -555,7 +589,7 @@ node --test --experimental-strip-types tests/*.test.ts   # бағдарлама�
 ### 🛠 Технологиялар
 
 - **Блокчейн:** Solana Devnet, Anchor 1.2 эскроу бағдарламасы (Rust), сығылған NFT (cNFT / State Compression, симуляция)
-- **Токендер және эскроу:** SPL-Token / Demo USDC, eKZT есеп айырысу абстракциясы
+- **Токендер және эскроу:** SPL-Token / Demo USDC, KZTE төлемдері (жоспарда зерттеу)
 - **Тәуекел қозғалтқышы:** болжамды скоринг логикасы және параметрлік оракул симуляторы
 - **Фронтенд және UI:** React, TypeScript, Tailwind CSS, Recharts
 - **Web3 интеграциясы:** `@solana/web3.js`, `@solana/wallet-adapter-react`
@@ -585,7 +619,7 @@ node --test --experimental-strip-types tests/*.test.ts   # бағдарлама�
 | **Дашборд және телеметрия** | Демо-ескерту, KPI, Орта дәліз бағытының нүктелері, Ақтаудағы кептеліс туралы хабарлама, таңдалған жүктің оракул деректері бойынша тұрып қалу уақыты мен 72 сағаттық триггер. |
 | **Web3 әмиян (демо-режим)** | Devnet-ке арналған Phantom / Solflare әмиян мәзірі және симуляцияланған қолтаңбаға дұрыс ауысу. |
 | **Жүк сүзгілері** | In Transit / High Risk Delay / Escrow Triggered сүзгілері қажетті жүктерді көрсетеді. |
-| **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 eKZT); тұрып қалуы 72 сағаттан аз жүк үшін триггер бас тартады; сыйлықақы ЖИ тәуекел бағасы бойынша есептеледі. |
+| **Полистің өмірлік циклі** | Шығару → кепілді бұғаттау → оракул оқиғасы → төлем (2 500 Demo USDC ≈ 1 250 000 KZTE, мысал); тұрып қалуы 72 сағаттан аз жүк үшін триггер бас тартады; сыйлықақы = жөнелту кезіндегі ЖИ болжамы бойынша кешігу ықтималдығы × төлем + 25% үстеме. |
 | **Автономды төлем** | Review settlement 2 500 Demo USDC төлемін растайды және оны кестеде таңдалған жүк бойынша жүргізеді; шектен төмен жүк төлем алмайды. |
 | **Caspian Risk Vault** | Demo USDC депозиті үлесті жаңартады; балансынан асатын сомалар қабылданбайды. |
 | **cNFT журналы** | Полистің әр оқиғасы сығылған Merkle бақылау нүктесі (жапырақ + түбір) ретінде жазылады. |
@@ -603,7 +637,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 
 - **[Архитектура](./docs/ARCHITECTURE.md)** — жүйе құрылымы, деректер ағыны, блокчейн мен офчейн арасындағы шекара.
 - **[Смарт-келісімшарт сипаттамасы](./docs/CONTRACT_SPECS.md)** — эскроу бағдарламасының аккаунттары, нұсқаулықтары және триггер логикасы.
-- **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC реттеушілік құмсалғышында eKZT арқылы шығу тұжырымдамасы.
+- **[AIFC құмсалғышы туралы жазбалар](./docs/AIFC_SANDBOX.md)** — AIFC құмсалғышына арналған реттеушілік тұжырымдама және KZTE төлемдерінің жоспары.
 - **[Презентация (PDF)](https://drive.google.com/file/d/1-UWk83wW0HsOWty91211pTQNe-KJoIfA/view?usp=sharing)** — Google Drive-тағы питч-дек.
 
 ### 📊 Нарық, дереккөздер және позициялау
@@ -614,7 +648,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **Argus** баға агенттігі (2026 жылғы қыркүйек): Сиань → Тбилиси/Поти **40HC үшін $6 900–7 200**, Сиань → Әлят/Баку 40HC үшін $6 750–7 200. [Trend.az шолуы](https://www.trend.az/casia/kazakhstan/4229949.html)
 - **ТХКБ / ҚР Көлік министрлігі**: Орта дәліз бойынша тасымал көлемі жылына 0,8-ден **~4,5 млн тоннаға** дейін өсті. [The Astana Times](https://astanatimes.com/2026/03/trans-caspian-transport-route-cargo-volumes-increase-fivefold-in-seven-years/)
 
-**Жаһандық Web3 бенчмарктері.** Блокчейндегі параметрлік сақтандыру басқа салаларда жұмыс істеп тұр: **Etherisc** (рейс кешігуі және агротәуекелдер), **Arbol** (ауа райына байланысты параметрлік өтелім), **Nayms** (реттелетін on-chain сақтандыру нарығы). SilkSol AI осы модельді ешкім қамтымаған дәлізге қолданады: Каспий порттарындағы тұрып қалу (Ақтау, Құрық, Баку), есеп айырысу AIFC / eKZT арқылы.
+**Жаһандық Web3 бенчмарктері.** Блокчейндегі параметрлік сақтандыру басқа салаларда жұмыс істеп тұр: **Etherisc** (рейс кешігуі және агротәуекелдер), **Arbol** (ауа райына байланысты параметрлік өтелім), **Nayms** (реттелетін on-chain сақтандыру нарығы). SilkSol AI осы модельді ешкім қамтымаған дәлізге қолданады: Каспий порттарындағы тұрып қалу (Ақтау, Құрық, Баку), AIFC құмсалғышы арқылы жол және теңгемен (KZTE) төлем жоспары бар.
 
 **Бизнес-модель және сақтандыру капиталы.**
 - **Кім төлейді:** экспедиторлар мен жүк жөнелтушілер әр жүк үшін сыйлықақы төлейді, оның мөлшері тәуекел бағасына байланысты.
@@ -626,16 +660,32 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - Демода өтелім 7 күнге созылады (`coverage_end`). Кепіл бұғатталған, бірақ триггер іске қосылмаған қоймалар осы мерзімге дейін ашық қалады; одан кейін [`oracle/reclaim-expired.ts`](./oracle/reclaim-expired.ts) скрипті кепілді қазынаға қайтарады.
 - Devnet-те бағдарламаны жаңартуға болады: жаңарту құқығы негізін қалаушының [`7u1Hy…bAJG`](https://explorer.solana.com/address/7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG?cluster=devnet) кілтінде, яғни кілт иесі ережелерді өзгерте алады. Mainnet-ке дейін жаңарту құқығы уақыт кідірісі бар мультиқолтаңбаға (мысалы, Squads) өтеді, ал аудиттен кейін бағдарлама қатырылады (жаңарту құқығынсыз), сондықтан жүк жөнелтуші сатып алған полистің ережелері кейін өзгермейді.
 - Тұрып қалу уақыты әр демо-жүк үшін симуляцияланған (#JOL-8921 96 сағ, #KZL-4107 110 сағ, #MCC-2048 6 сағ, #TRK-7782 18 сағ). Оракул бұл деректерді серверде алады; браузер оларды өзгерте алмайды.
-- Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы және eKZT айырбасы симуляцияланған.
+- Төлемдер USDC орнына Devnet SOL-мен жүреді; cNFT журналы симуляцияланған; KZTE сомалары мысал ретінде.
 - Демо-сақтандырушыда шектеулер бар (әр әмиянға, сондай-ақ жалпы сағатына 10 және тәулігіне 40 қазына транзакциясы — кепілдер мен төлемдер бірге), Devnet қазынасы таусылмауы үшін.
 - Күнделікті тексеру ([`oracle/netlify/functions/monitor.mjs`](./oracle/netlify/functions/monitor.mjs), Netlify жоспарланған функциясы, Ақтау уақытымен 09:00) қазына балансын, ашық қоймаларды және тірі қосымшаны тексеріп, жүргізушінің Telegram-ына 🟢/🔴 есеп жібереді; қазынада 1 SOL-дан аз қалса, толтыру туралы шұғыл ескерту береді. Тек оқиды: онда кілттер жоқ.
+
+### 🧮 Полис бағасы, базистік тәуекел және оракулға сенім
+
+<p align="center"><img src="./assets/pricing-flow-kz.svg" alt="SilkSol AI полис бағасы мен төлемді қалай есептейді: 20% × 2 500 + 25% = 625; 72 сағаттан көп тұрып қалса 2 500 төленеді, әйтпесе төлем жоқ" width="640"/></p>
+
+**Полис бағасы қалай есептеледі.** Жүк жөнелтілгенде ЖИ порттағы тұрып қалудың 72 сағаттан асу ықтималдығын болжайды. Баға = ықтималдық × төлем + сақтандырушының 25% үстемесі (шығын, капитал, пайда). #JOL-8921 үшін: 20% × 2 500 = 500 күтілетін шығын, оған 25% қосылады = **625 Demo USDC**. Дашбордтағы «AI risk» (#JOL-8921-де қазір 68%) — жүк тұрып қалғаннан кейінгі тәуекел, баға оған қарап есептелмейді: жанып жатқан үйді арзанға сақтандыру мүмкін емес. Код: [`premiumFor`](./src/components/solana/PolicyEngine.tsx). Төлем блокчейндегі қарапайым ереже болып қалады (`dwell_time > threshold`), төлеу-төлемеуді ЖИ шешпейді.
+
+**Параметрлік сақтандырудың әлсіз тұстары және оларды қалай шешеміз**
+
+| Тәуекел | Мысал | SilkSol AI қалай шешеді | Мәртебе |
+|---|---|---|---|
+| **Шығынсыз төлем** | Жүк 73 сағ тұрды, экспедитор ештеңе жоғалтпады | Өнім жүкті сақтандыру емес, тұрып қалған ақшадан қорғау. Экспедитор төлем сомасын тұрып қалудан болатын өз шығынына қарап таңдайды (контейнер айыппұлы, несие, тұрақсыздық айыбы). Полис нақты тасымалға (жүкқұжатқа) байланған, сомасы мәлімделген құнынан аспайды. | 📄 полис шарттары |
+| **Төлемсіз шығын** | 70 сағ тұрды, келісімшарт бұзылды, төлем жоқ | Кенет үзілудің орнына сатылы төлем (мысалы, 48–72 сағ — 25%, 72–96 сағ — 50%, 96 сағаттан көп — 100%) және клиент өзі таңдайтын шек (48 / 72 / 96 сағ; шек төмен болса, полис қымбат, бағаны сол ЖИ есептейді). SilkSol — ірі шығындарды өтейтін классикалық жүк сақтандыруына қосымша жылдам ақша. | 📄 келесі: эскроу бағдарламасындағы сатылар |
+| **Санға кім кепіл** | Сақтандырушы мен дереккөз — бір тарап | Қазірдің өзінде оракул кілті сақтандырушыдан бөлек, бағдарлама мұны тексереді (`OracleIsInsurer`); әр төлемнің memo-сында есеп хэші бар. Келесі: тәуелсіз деректер (Ақтау мен Бакудегі Каспий паромдарының ашық AIS сигналдары, кейін порт пен темір жол деректері), 3 оракулдың 2 қолы және төлемге дейін дауласуға 24 сағат. | ✅ бөлек кілттер · 📄 қалғаны |
+
+✅ кодта · 📄 жоспарда
 
 ### 🗺 Жол картасы: Devnet MVP-ден өндіріске дейін
 
 | | Қазір (Devnet MVP) | Келесі қадам | Өндіріс |
 |---|---|---|---|
 | **Эскроу** | ✅ Anchor бағдарламасы Devnet-те жұмыс істейді, бағдарламаның 13 тесті | Қауіпсіздік шолуы және аудит | Mainnet-ке орналастыру |
-| **Төлем валютасы** | ✅ USDC орнына Devnet SOL | SPL USDC эскроу қоймалары | USDC + eKZT қос есеп айырысу (AIFC құмсалғышы) |
+| **Төлем валютасы** | ✅ USDC орнына Devnet SOL | SPL USDC эскроу қоймалары | USDC, кейін KZTE төлемдері (зерттейміз) |
 | **Оракул** | ✅ Оракул кілті сақтандырушыдан бөлек, бағдарламада тексеріледі | Порт пен теміржол телеметриясы (Ақтау, Баку) | Бірнеше қол қоюшы / орталықсыздандырылған оракул желісі |
 | **Аудит журналы** | 🟡 cNFT журналы симуляция | Нақты State Compression (Bubblegum) | Жүктің әр оқиғасы cNFT ретінде жазылады |
 | **Тәуекелді бағалау** | 🟡 Симуляцияланған телеметрия бойынша ережеге негізделген скоринг | Серіктес операторлардан тұрып қалу уақытының тарихи деректері | Оқытылған модель сыйлықақыны нақты уақытта есептейді |
@@ -650,7 +700,7 @@ npm run test:e2e:live             # тірі қосымшада silksol.datarigl
 - **MVP деректері мен телеметриясы:** бұл ашық репозиторий — хакатонға арналған интерактивті MVP. Барлық телеметрия, тәуекел көрсеткіштері мен оракул оқиғалары нақты датчиктерсіз автоматты процесті көрсету үшін синтетикалық/симуляцияланған деректерге негізделген.
 - **Детерминирленген триггерлер:** ЖИ/ML болжамды тәуекел бағасына жауап береді; төлем туралы шешімді смарт-келісімшарт қатаң ереже бойынша қабылдайды (`dwell_time > threshold`).
 - **ЗМ қорғау:** өндірістік тәуекел скорингінің логикасы мен болашақ модельдердің параметрлері SilkSol AI-дың құпия активтері болып қалады. Бұл ашық MVP симуляцияланған деректер бойынша ережеге негізделген жеңілдетілген скорингті қолданады (жоғарыдағы жол картасын қараңыз).
-- **Реттеушілік жол картасы:** eKZT / цифрлық теңге интеграциясы — AIFC реттеушілік құмсалғышында болашақта сынауға арналған құрылымдық ұсыныс.
+- **Реттеушілік жол картасы:** [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte) арқылы төлем (Solana-дағы теңге стейблкоині, ҚР Ұлттық банкінің құмсалғышындағы пилот) — дайын интеграция емес, зерттеу бағыты. Цифрлық теңге (eKZT) Solana-да емес, Ұлттық банктің өз платформасында жұмыс істейді, сондықтан ол мақсат емес. Полис сату үшін лицензиясы бар серіктес сақтандырушы керек (мақсат: AIFC құмсалғышы).
 
 ### 🚀 Жергілікті іске қосу
 

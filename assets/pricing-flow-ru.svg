@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="1250" viewBox="0 0 1520 1250" font-family="-apple-system, 'Segoe UI', Inter, Helvetica, Arial, sans-serif">
+<rect width="1520" height="1250" rx="32" fill="#ffffff"/>
+<rect x="160" y="110" width="1200" height="270" rx="28" fill="#e1f5ee" stroke="#0f6e56" stroke-width="2"/>
+<text x="760" y="198" text-anchor="middle" font-size="50" font-weight="600" fill="#04342c">1. Прогноз ИИ и цена полиса</text>
+<text x="760" y="265" text-anchor="middle" font-size="34" fill="#0f6e56">шанс задержки > 72 ч: 20% (прогноз при отправке)</text>
+<text x="760" y="330" text-anchor="middle" font-size="36" font-weight="600" fill="#085041">20% × 2 500 = 500  +  25% надбавка  =  625 цена</text>
+<line x1="760" y1="382" x2="760" y2="474" stroke="#888780" stroke-width="5"/>
+<polyline points="740,450 760,474 780,450" fill="none" stroke="#888780" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="160" y="490" width="1200" height="220" rx="28" fill="#eeedfe" stroke="#534ab7" stroke-width="2"/>
+<text x="760" y="582" text-anchor="middle" font-size="50" font-weight="600" fill="#3c3489">2. Оракул считает часы простоя</text>
+<text x="760" y="650" text-anchor="middle" font-size="34" fill="#534ab7">порог: 72 ч · подпись отдельного ключа оракула</text>
+<line x1="440" y1="712" x2="440" y2="826" stroke="#888780" stroke-width="5"/>
+<polyline points="420,802 440,826 460,802" fill="none" stroke="#888780" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="1080" y1="712" x2="1080" y2="826" stroke="#888780" stroke-width="5"/>
+<polyline points="1060,802 1080,826 1100,802" fill="none" stroke="#888780" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="160" y="840" width="560" height="260" rx="28" fill="#eaf3de" stroke="#3b6d11" stroke-width="2"/>
+<text x="440" y="925" text-anchor="middle" font-size="46" font-weight="600" fill="#27500a">Больше 72 ч</text>
+<text x="440" y="990" text-anchor="middle" font-size="34" fill="#3b6d11">#JOL-8921: 96 ч</text>
+<text x="440" y="1050" text-anchor="middle" font-size="38" font-weight="600" fill="#27500a">платим 2 500</text>
+<rect x="800" y="840" width="560" height="260" rx="28" fill="#f1efe8" stroke="#5f5e5a" stroke-width="2"/>
+<text x="1080" y="925" text-anchor="middle" font-size="46" font-weight="600" fill="#444441">72 ч или меньше</text>
+<text x="1080" y="990" text-anchor="middle" font-size="34" fill="#5f5e5a">#TRK-7782: 18 ч</text>
+<text x="1080" y="1050" text-anchor="middle" font-size="34" fill="#5f5e5a">не платим (NotEligible)</text>
+<text x="760" y="1175" text-anchor="middle" font-size="28" fill="#5f5e5a">Суммы в Demo USDC. В Devnet: премия 0.001 SOL, выплата 0.01 SOL.</text>
+</svg>

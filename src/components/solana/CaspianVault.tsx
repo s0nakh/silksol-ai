@@ -59,12 +59,13 @@ export function CaspianVault({ walletUsdc, staked, tvl, onChange }: Props) {
       </div>
       <div className="grid grid-cols-3 divide-x divide-border py-4">
         <Stat icon={Landmark} label="TVL" value={`$${(tvl / 1_000_000).toFixed(2)}M`} />
-        <Stat icon={Percent} label="Net APY" value="11.8%" />
+        <Stat icon={Percent} label="APY (illustrative)" value="11.8%" />
         <Stat icon={Vault} label="Your stake" value={staked.toLocaleString()} />
       </div>
       <div className="flex items-center gap-2 border-t border-border px-5 py-3">
         <p className="text-[10px] leading-4 text-muted-foreground">
-          Underwrites parametric cargo cover. Yield from premiums — simulated.
+          Later-phase concept: would underwrite cargo cover from premiums. APY is illustrative, not
+          an offer; qualified investors only (AIFC).
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -107,7 +108,7 @@ export function CaspianVault({ walletUsdc, staked, tvl, onChange }: Props) {
               )}
               {mode === "withdraw" && Number.isFinite(value) && value > 0 && (
                 <p className="text-[11px] text-muted-foreground">
-                  (or ~{(value * 500).toLocaleString()} eKZT via AIFC Gateway)
+                  (or ~{(value * 500).toLocaleString()} KZTE, planned)
                 </p>
               )}
               <p className="text-xs text-muted-foreground">

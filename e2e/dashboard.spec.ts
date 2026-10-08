@@ -122,7 +122,7 @@ test.describe("Parametric policy lifecycle", () => {
 
     await engine.getByRole("button", { name: /Trigger Oracle Event/ }).click();
     await expect(engine.getByText("Claim Paid Out · 2,500 Demo USDC")).toBeVisible();
-    await expect(engine).toContainText("~1,250,000 eKZT via AIFC Gateway");
+    await expect(engine).toContainText("~1,250,000 KZTE, planned");
     await expect(engine).toContainText(/Settled in \d+ ms/);
     await expect(row).toContainText("Claim Paid Out (Demo USDC)");
   });
@@ -144,20 +144,24 @@ test.describe("Parametric policy lifecycle", () => {
     await expect(page.getByRole("tooltip")).toContainText("dwell 6h ≤ 72h threshold");
   });
 
-  test("premium is priced from the AI risk score", async ({ page }) => {
-    // premium = round(2500 * (0.004 + risk * 0.03)); JOL-8921 risk 68% → 61, MCC-2048 risk 12% → 19
-    await expect(cargoRow(page, "JOL-8921")).toContainText("61 USDC");
-    await expect(cargoRow(page, "MCC-2048")).toContainText("19 USDC");
+  test("premium is the expected loss plus loading, priced from the AI forecast", async ({
+    page,
+  }) => {
+    // premium = round(2500 * quoteRisk * 1.25): expected loss + 25% loading, priced at departure.
+    // JOL-8921 20% → 625, MCC-2048 8% → 250
+    await expect(cargoRow(page, "JOL-8921")).toContainText("625 USDC");
+    await expect(cargoRow(page, "MCC-2048")).toContainText("250 USDC");
 
     await cargoRow(page, "MCC-2048").click();
     const engine = policyEngine(page);
     await expect(engine).toContainText("12%");
-    await expect(engine).toContainText("19");
+    await expect(engine.getByTestId("premium-formula")).toContainText("8% chance of delay > 72h");
+    await expect(engine).toContainText("250");
   });
 });
 
 test.describe("Autonomous settlement", () => {
-  test("review settlement acknowledges the 2,500 Demo USDC payout with eKZT equivalent", async ({
+  test("review settlement acknowledges the 2,500 Demo USDC payout with KZTE equivalent", async ({
     page,
   }) => {
     await expect(page.getByText("Compensation triggered")).toBeVisible();

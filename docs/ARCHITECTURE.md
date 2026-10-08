@@ -17,7 +17,7 @@ SilkSol AI is composed of three cooperating layers: a predictive risk engine, a 
  ║  • Compressed NFTs (cNFT): Immutable Freight Logs       ║
  ║  • Program Escrow Vault: Automated Collateralized USDC  ║
  ║  • Deterministic Settlement: Parametric Trigger Logic   ║
- ║  • eKZT Abstraction: AIFC Regulatory Off-Ramp Concept   ║
+ ║  • KZTE Payouts: Tenge Stablecoin (to be explored)      ║
  ╚═════════════════════════════════════════════════════════╝
                         │  (Web3 Wallet RPC / Program Logs)
                         ▼
@@ -38,7 +38,7 @@ SilkSol AI is composed of three cooperating layers: a predictive risk engine, a 
 
 - **Escrow Vault Program:** holds collateralized USDC and releases it automatically once a deterministic, rule-based delay condition is met (`dwell_time > threshold`).
 - **Compressed NFTs (cNFTs):** record an immutable, low-cost audit trail of freight events and settlement decisions.
-- **eKZT Abstraction:** a settlement abstraction layer that models a future dual-currency (USDC ⇄ eKZT / Digital Tenge) off-ramp for AIFC regulatory sandbox review.
+- **Tenge payouts (planned):** payouts in [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte), a tenge stablecoin on Solana, are a direction to explore; tenge amounts in the UI are illustrative. The digital tenge (eKZT) runs on the National Bank's own platform, not on Solana.
 
 ## 3. Enterprise Frontend Dashboard
 

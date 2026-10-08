@@ -51,7 +51,7 @@ import { CaspianVault } from "@/components/solana/CaspianVault";
 import { AuditDrawer, type AuditLog } from "@/components/solana/AuditDrawer";
 import { PolicyEngine, premiumFor, type Policy } from "@/components/solana/PolicyEngine";
 import { DemoTag, explorerTx, mockTxHash, shortHash } from "@/components/solana/DemoTag";
-import { ekzt } from "@/components/solana/devnetTx";
+import { kzte } from "@/components/solana/devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
 import {
   TRIGGER_THRESHOLD_HOURS,
@@ -136,7 +136,10 @@ type Cargo = {
   /** Hours until arrival, counted from page load so the demo never shows a stale date. */
   etaHours: number;
   status: "In Transit" | "High Risk Delay" | "Escrow Triggered";
+  /** Live AI delay risk (%) from current telemetry. */
   risk: number;
+  /** AI forecast at departure (%): chance that dwell exceeds 72 h. Prices the premium. */
+  quoteRisk: number;
 };
 
 const cargoes: Cargo[] = [
@@ -148,6 +151,7 @@ const cargoes: Cargo[] = [
     etaHours: 54,
     status: "High Risk Delay",
     risk: 68,
+    quoteRisk: 20,
   },
   {
     id: "MCC-2048",
@@ -157,6 +161,7 @@ const cargoes: Cargo[] = [
     etaHours: 77,
     status: "In Transit",
     risk: 12,
+    quoteRisk: 8,
   },
   {
     id: "KZL-4107",
@@ -166,6 +171,7 @@ const cargoes: Cargo[] = [
     etaHours: 31,
     status: "Escrow Triggered",
     risk: 91,
+    quoteRisk: 24,
   },
   {
     id: "TRK-7782",
@@ -175,6 +181,7 @@ const cargoes: Cargo[] = [
     etaHours: 19,
     status: "In Transit",
     risk: 7,
+    quoteRisk: 6,
   },
 ];
 
@@ -236,6 +243,7 @@ function Dashboard() {
       etaHours: 54,
       status: "High Risk Delay",
       risk: 68,
+      quoteRisk: 20,
     },
   );
   const [filter, setFilter] = useState("All cargoes");
@@ -304,7 +312,11 @@ function Dashboard() {
   const reviewSettlement = async () => {
     const cargo = selectedCargo;
     const coverage = 2500;
-    const paid = { stage: "paid" as const, coverage, premium: premiumFor(cargo.risk, coverage) };
+    const paid = {
+      stage: "paid" as const,
+      coverage,
+      premium: premiumFor(cargo.quoteRisk, coverage),
+    };
     if (!met && !wallet.connected) {
       refuse(
         cargo.id,
@@ -319,7 +331,7 @@ function Dashboard() {
         "Settlement acknowledged (simulated)",
       );
       toast.success(`Settlement acknowledged for cargo #${cargo.id} (Simulated)`, {
-        description: `${coverage.toLocaleString()} Demo USDC · (or ${ekzt(coverage)} via AIFC Gateway)`,
+        description: `${coverage.toLocaleString()} Demo USDC · (or ${kzte(coverage)}, planned)`,
       });
       return;
     }
@@ -550,7 +562,9 @@ function Dashboard() {
                         <th>ETA</th>
                         <th>Status</th>
                         <th>AI risk</th>
-                        <th>Premium</th>
+                        <th title="Priced at departure: AI chance of delay > 72 h × 2,500 payout + 25% loading">
+                          Premium
+                        </th>
                         <th>Policy</th>
                       </tr>
                     </thead>
@@ -595,7 +609,7 @@ function Dashboard() {
                                 </span>
                               </td>
                               <td className="whitespace-nowrap">
-                                {premiumFor(cargo.risk, 2500)}{" "}
+                                {premiumFor(cargo.quoteRisk, 2500)}{" "}
                                 <span className="text-[10px]">USDC</span>
                               </td>
                               <td>
@@ -630,7 +644,7 @@ function Dashboard() {
                                         {
                                           stage: "issued",
                                           coverage: 2500,
-                                          premium: premiumFor(cargo.risk, 2500),
+                                          premium: premiumFor(cargo.quoteRisk, 2500),
                                         },
                                         "Policy issued",
                                       );
@@ -693,6 +707,7 @@ function Dashboard() {
             <PolicyEngine
               cargoId={selectedCargo.id}
               risk={selectedCargo.risk}
+              quoteRisk={selectedCargo.quoteRisk}
               dwellHours={dwell}
               onRefused={(detail) => markRefused(selectedCargo.id, detail)}
               policy={policyOf(selectedCargo.id)}
@@ -857,7 +872,7 @@ function Dashboard() {
                       </span>
                     </p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      (or {ekzt(2500)} via AIFC Gateway)
+                      (or {kzte(2500)}, planned)
                     </p>
                     {settleOnChain ? (
                       <p className="mt-1 text-xs font-semibold text-success">

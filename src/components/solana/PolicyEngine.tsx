@@ -1,5 +1,5 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { PREMIUM_SOL, ekzt, sendPremium } from "./devnetTx";
+import { PREMIUM_SOL, kzte, sendPremium } from "./devnetTx";
 import { insurerAction } from "@/lib/insurer.functions";
 import {
   DEMO_COLLATERAL_LAMPORTS,
@@ -30,12 +30,22 @@ export type Policy = {
 
 const COLLATERAL_SOL = DEMO_COLLATERAL_LAMPORTS / LAMPORTS_PER_SOL;
 
-export const premiumFor = (risk: number, coverage: number) =>
-  Math.round(coverage * (0.004 + (risk / 100) * 0.03));
+/** Insurer's loading on top of the expected loss: expenses, capital and profit. */
+export const PREMIUM_LOADING = 0.25;
+
+/**
+ * Premium = expected loss + loading = P(dwell > 72 h) × payout × (1 + loading).
+ * `quoteRisk` is the AI forecast (in %) made when the policy is quoted at departure,
+ * not the live risk once the cargo is already stuck.
+ */
+export const premiumFor = (quoteRisk: number, coverage: number) =>
+  Math.round(coverage * (quoteRisk / 100) * (1 + PREMIUM_LOADING));
 
 type Props = {
   cargoId: string;
   risk: number;
+  /** AI forecast at departure: probability (in %) that dwell exceeds the threshold. */
+  quoteRisk: number;
   dwellHours: number;
   /** Called with the reason when the escrow contract refuses a claim (trigger not met). */
   onRefused: (detail: string) => void;
@@ -43,7 +53,15 @@ type Props = {
   onUpdate: (p: Policy, event: string) => void;
 };
 
-export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onUpdate }: Props) {
+export function PolicyEngine({
+  cargoId,
+  risk,
+  quoteRisk,
+  dwellHours,
+  onRefused,
+  policy,
+  onUpdate,
+}: Props) {
   const wallet = useWallet();
   const { connection } = useConnection();
   const { connected, signMessage } = wallet;
@@ -71,7 +89,7 @@ export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onU
 
   const issue = async () => {
     const coverage = 2500;
-    const base = { stage: "issued" as const, coverage, premium: premiumFor(risk, coverage) };
+    const base = { stage: "issued" as const, coverage, premium: premiumFor(quoteRisk, coverage) };
     if (!connected) {
       onUpdate(base, "Policy issued");
       return;
@@ -241,7 +259,7 @@ export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onU
       toast.success(
         `Claim Paid Out · cargo #${cargoId} · ${policy.coverage.toLocaleString()} Demo USDC`,
         {
-          description: `(or ${ekzt(policy.coverage)} via AIFC Gateway) · Mock tx ${shortHash(tx)} · ${Math.round(target)} ms`,
+          description: `(or ${kzte(policy.coverage)}, planned) · Mock tx ${shortHash(tx)} · ${Math.round(target)} ms`,
           action: { label: "Explorer", onClick: () => window.open(explorerTx(tx), "_blank") },
         },
       );
@@ -276,13 +294,18 @@ export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onU
       <div className="space-y-4 p-5">
         <div className="grid grid-cols-3 gap-2 text-xs">
           <Cell
-            label="AI risk score"
+            label="AI risk now"
             value={`${risk}%`}
             tone={risk > 60 ? "text-warning" : "text-success"}
           />
           <Cell label="Coverage" value={`${(policy.coverage || 2500).toLocaleString()}`} />
-          <Cell label="Premium" value={`${premiumFor(risk, policy.coverage || 2500)}`} />
+          <Cell label="Premium" value={`${premiumFor(quoteRisk, policy.coverage || 2500)}`} />
         </div>
+        <p className="-mt-2 text-[10px] text-muted-foreground" data-testid="premium-formula">
+          Premium = {quoteRisk}% chance of delay &gt; {TRIGGER_THRESHOLD_HOURS}h (AI forecast at
+          departure) × {(policy.coverage || 2500).toLocaleString()} payout + {PREMIUM_LOADING * 100}
+          % insurer loading
+        </p>
         <p className="-mt-2 text-[10px] text-muted-foreground">
           Amounts in Demo USDC · trigger: delay &gt; {TRIGGER_THRESHOLD_HOURS}h · oracle dwell:{" "}
           <span className={met ? "font-semibold text-warning" : "font-semibold text-success"}>
@@ -366,7 +389,7 @@ export function PolicyEngine({ cargoId, risk, dwellHours, onRefused, policy, onU
               </p>
             )}
             <p className="mt-0.5 text-[11px] text-muted-foreground">
-              (or {ekzt(policy.coverage)} via AIFC Gateway)
+              (or {kzte(policy.coverage)}, planned)
             </p>
             <p className="mt-1 text-muted-foreground">
               Settled in {policy.payoutMs} ms ·{" "}

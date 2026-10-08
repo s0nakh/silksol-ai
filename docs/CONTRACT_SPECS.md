@@ -16,7 +16,7 @@
 | `EscrowVault` PDA, collateral lock, oracle telemetry, deterministic trigger, payout, close | ✅ **On-chain (Devnet)** |
 | Collateral asset | Devnet **SOL (lamports)** as a stand-in for USDC. SPL-USDC vaults are on the roadmap. |
 | `SettlementLog` | Emitted as an on-chain Anchor **event** (`SettlementLogged`) in the transaction logs. Compressed-NFT (cNFT) minting is **simulated** in the UI. |
-| eKZT off-ramp | Simulated settlement abstraction (see below). |
+| Tenge payouts (KZTE) | Planned, not integrated; tenge amounts in the UI are illustrative (see below). |
 
 ## Core Accounts
 
@@ -78,6 +78,6 @@ The insurer and oracle run as a separate Netlify Function ([`oracle/`](../oracle
 - Vaults that were locked but never triggered stay open until `coverage_end` (7 days in the demo); after that the insurer reclaims them with `close_vault` ([`oracle/reclaim-expired.ts`](../oracle/reclaim-expired.ts)).
 - The program is upgradeable on Devnet (upgrade authority `7u1HyAzKEeMtNLwfNKsRM9VRizneu9AV7vziNRNVbAJG`). Before Mainnet: a multisig upgrade authority with a time delay, then a frozen program after an audit.
 
-## eKZT Off-Ramp Abstraction
+## Tenge Payouts (planned)
 
-`settle_payout` is designed for an optional dual-currency path that models converting a USDC payout into an eKZT (Digital Tenge) equivalent for future AIFC regulatory sandbox compliance. On Devnet this is a settlement-abstraction simulation, not a live fiat rail. See [AIFC Sandbox Regulatory Notes](./AIFC_SANDBOX.md).
+Today `settle_payout` moves lamports (a USDC stand-in). Next come SPL-USDC vaults; after that we plan to explore paying out in [KZTE](https://cointelegraph.com/news/kazakhstan-solana-mastercard-stablecoin-kzte), a tenge stablecoin on Solana piloted in the National Bank of Kazakhstan's sandbox. It is an SPL token, so the vault logic stays the same. Whether third-party projects may use KZTE is not yet checked. The digital tenge (eKZT) is not a target: it runs on the National Bank's own platform, not on Solana. See [AIFC Sandbox Regulatory Notes](./AIFC_SANDBOX.md).
