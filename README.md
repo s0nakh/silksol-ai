@@ -117,7 +117,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 
 ## 🧪 Testing & E2E Validation
 
-### ✅ Verification status — all green (Oct 6, 2026)
+### ✅ Verification status — all green (Oct 8, 2026)
 
 | Check | Result |
 |---|---|
@@ -367,7 +367,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 тестов пр�
 
 ### 🧪 Тестирование и E2E-проверка
 
-#### ✅ Статус проверки — всё зелёное (6 октября 2026)
+#### ✅ Статус проверки — всё зелёное (8 октября 2026)
 
 | Проверка | Результат |
 |---|---|
@@ -597,7 +597,7 @@ node --test --experimental-strip-types tests/*.test.ts   # бағдарлама�
 
 ### 🧪 Тестілеу және E2E тексеру
 
-#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 6 қазан)
+#### ✅ Тексеру мәртебесі — бәрі жасыл (2026 жылғы 8 қазан)
 
 | Тексеру | Нәтиже |
 |---|---|
