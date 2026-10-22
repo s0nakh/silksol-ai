@@ -291,7 +291,7 @@ Copyright © 2026 **SilkSol AI / s0nakh**. All rights reserved.
 
 <p align="center"><em>Предиктивная аналитика рисков и протокол параметрических выплат для логистики Среднего коридора (ТМТМ) на Solana</em></p>
 
-[🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/16e3dec8fe1f4a1488efa34fc906ea41) · [🎤 Питч-видео](https://www.loom.com/share/7a5fc765245d46a6aed6e34b6acee973) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1k0Qk2oTvkdtilKcwOynkIjv-V1wDtucf/view?usp=sharing) · [📚 Документация](./docs/ARCHITECTURE.md)
+[🌐 Приложение](https://silksol.datariglab.kz/) · [🎥 Демо-видео](https://www.loom.com/share/16e3dec8fe1f4a1488efa34fc906ea41) · [🎤 Питч-видео](https://www.loom.com/share/7a5fc765245d46a6aed6e34b6acee973) · [📊 Презентация (PDF)](https://drive.google.com/file/d/1lc4EaQJvS0N_4fC3XCFriFov43R7qd5V/view?usp=sharing) · [📚 Документация](./docs/ARCHITECTURE.md)
 
 ### 💡 Краткое описание
 
@@ -411,7 +411,7 @@ npm run test:e2e:live             # на живом приложении silksol
 - **[Архитектура](./docs/ARCHITECTURE.md)** — устройство системы, потоки данных, граница между блокчейном и офчейном.
 - **[Спецификация смарт-контракта](./docs/CONTRACT_SPECS.md)** — аккаунты, инструкции и логика триггера эскроу-программы.
 - **[Заметки о песочнице AIFC](./docs/AIFC_SANDBOX.md)** — регуляторная концепция для песочницы AIFC и планы по выплатам в KZTE.
-- **[Презентация (PDF)](https://drive.google.com/file/d/1k0Qk2oTvkdtilKcwOynkIjv-V1wDtucf/view?usp=sharing)** — питч-дек на Google Drive.
+- **[Презентация (PDF)](https://drive.google.com/file/d/1lc4EaQJvS0N_4fC3XCFriFov43R7qd5V/view?usp=sharing)** — питч-дек на Google Drive.
 
 ### 📊 Рынок, источники и позиционирование
 
