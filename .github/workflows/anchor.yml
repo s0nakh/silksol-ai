@@ -1,7 +1,18 @@
 name: Solana Program
 
-# Manual trigger for now; add `push: { branches: [main] }` and `pull_request:` to run on every commit.
+# Runs only when the program, its tests or the dashboard's escrow client change (a cold build takes ~20 min).
 on:
+  push:
+    branches: [main]
+    paths:
+      - "anchor/**"
+      - "src/components/solana/escrowProgram.ts"
+      - ".github/workflows/anchor.yml"
+  pull_request:
+    paths:
+      - "anchor/**"
+      - "src/components/solana/escrowProgram.ts"
+      - ".github/workflows/anchor.yml"
   workflow_dispatch:
 
 env:

@@ -8,8 +8,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Solana-Devnet-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana Devnet" />
-  <a href="./e2e/dashboard.spec.ts"><img src="https://img.shields.io/badge/E2E_Tests-17%20Passed-brightgreen?style=for-the-badge&logo=playwright" alt="E2E Testing Status" /></a>
-  <a href="./anchor/tests/silksol_escrow.test.ts"><img src="https://img.shields.io/badge/Program_Tests-13%20Passed-brightgreen?style=for-the-badge&logo=solana&logoColor=white" alt="Solana program tests" /></a>
+  <a href="https://github.com/s0nakh/silksol-ai/actions/workflows/e2e.yml"><img src="https://img.shields.io/github/actions/workflow/status/s0nakh/silksol-ai/e2e.yml?branch=main&style=for-the-badge&logo=playwright&label=E2E%20Tests" alt="E2E tests (GitHub Actions)" /></a>
+  <a href="https://github.com/s0nakh/silksol-ai/actions/workflows/anchor.yml"><img src="https://img.shields.io/github/actions/workflow/status/s0nakh/silksol-ai/anchor.yml?branch=main&style=for-the-badge&logo=solana&logoColor=white&label=Program%20Tests" alt="Solana program tests (GitHub Actions)" /></a>
   <a href="https://explorer.solana.com/address/Gu7gKXNnp95qTvaDwoq3NB9JCqBQLmriHQgKrFzJAr9Z?cluster=devnet"><img src="https://img.shields.io/badge/Program-Devnet-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Escrow program on Devnet" /></a>
   <img src="https://img.shields.io/badge/AIFC-Sandbox_Concept-D4AF37?style=for-the-badge" alt="Regulatory Framework" />
 </p>
@@ -132,7 +132,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 program tests
 
 ### E2E suite
 
-A [Playwright](https://playwright.dev) suite (17 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. A ready-to-run [GitHub Actions workflow](./.github/workflows/e2e.yml) is included.
+A [Playwright](https://playwright.dev) suite (17 tests, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) drives the dApp in a real Chromium browser exactly as a judge would — no browser wallet, so every signature takes the dApp's simulated Devnet path and no funds move. GitHub Actions runs it on every push and pull request ([workflow](./.github/workflows/e2e.yml)).
 
 | Suite | Coverage |
 |---|---|
@@ -385,7 +385,7 @@ node --test --experimental-strip-types tests/*.test.ts   # 13 тестов пр�
 
 #### E2E-набор
 
-Набор [Playwright](https://playwright.dev) (17 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. В репозитории есть готовый [workflow GitHub Actions](./.github/workflows/e2e.yml).
+Набор [Playwright](https://playwright.dev) (17 тестов, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) проходит по приложению в настоящем браузере Chromium так же, как это сделал бы судья. Кошелька в браузере нет, поэтому все подписи идут по симулированному пути и деньги не двигаются. GitHub Actions запускает его при каждом изменении в репозитории ([workflow](./.github/workflows/e2e.yml)).
 
 | Набор | Что проверяется |
 |---|---|
@@ -620,7 +620,7 @@ node --test --experimental-strip-types tests/*.test.ts   # бағдарлама�
 
 #### E2E жиынтығы
 
-[Playwright](https://playwright.dev) жиынтығы (17 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. Репозиторийде дайын [GitHub Actions workflow](./.github/workflows/e2e.yml) бар.
+[Playwright](https://playwright.dev) жиынтығы (17 тест, [`e2e/dashboard.spec.ts`](./e2e/dashboard.spec.ts)) қосымшаны нақты Chromium браузерінде төреші сияқты тексереді. Браузерде әмиян жоқ, сондықтан барлық қолтаңбалар симуляция жолымен жүреді және ақша қозғалмайды. GitHub Actions оны репозиторийдегі әр өзгерісте іске қосады ([workflow](./.github/workflows/e2e.yml)).
 
 | Жиынтық | Не тексеріледі |
 |---|---|
